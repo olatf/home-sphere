@@ -22,7 +22,7 @@ export const updateSession = async (req: NextRequest) => {
 
   if (protectedRoutes.some(r => req.nextUrl.pathname.startsWith(r))) {
     if (!user) {
-      return NextResponse.redirect(new URL('/sign-in', req.url));
+      return NextResponse.redirect(new URL('/', req.url));
     }
   }
 
