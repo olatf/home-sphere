@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import { QueryProvider } from '@/providers/QueryProvider';
 
 import { Toaster } from 'sonner';
 import { Cardo, Hanken_Grotesk } from 'next/font/google';
@@ -31,7 +32,7 @@ export default function RootLayout({
       <body
         className={`${hankenGrotesk.variable} ${cardo.variable} antialiased`}
       >
-        {children}
+        <QueryProvider>{children}</QueryProvider>
         <Toaster position="bottom-right" closeButton />
       </body>
     </html>

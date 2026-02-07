@@ -16,12 +16,10 @@ export const formatDateAndTime = (datetime: string | null) => {
   };
 };
 
-
 export const TimeInterval = (iso: string) => {
   const diff = Date.now() - new Date(iso).getTime();
-  if (diff < 60_000) return "just now";
+  if (diff < 60_000) return 'just now';
   if (diff < 3_600_000) return `${Math.floor(diff / 60_000)} mins ago`;
   if (diff < 86_400_000) return `${Math.floor(diff / 3_600_000)} hours ago`;
   return new Date(iso).toLocaleDateString();
 };
-

@@ -1,0 +1,332 @@
+'use server';
+
+import { createClient } from '@/lib/supabase/server';
+import { safeStr } from '@/helpers/data.helpers';
+import type { Provider, User } from '@supabase/supabase-js';
+import { SITE_URL } from '@/config/constants';
+import { OnboardingValues } from '@/lib/schemas/onboarding';
+import { getResetPasswordEmailHTML } from '@/templates/emails/getResetPasswordEmail';
+import { sendEmail } from './sendEmail';
+import { redirect } from 'next/navigation';
+import { uploadFile } from './uploadFile';
+import { getOnboardingEmailHTML } from '@/templates/emails/getOnboardingEmail';
+
+export const signUp = async (email: string) => {
+  const supabase = await createClient();
+
+  const { error } = await supabase.auth.signInWithOtp({
+    email,
+  });
+
+  if (error) {
+    return {
+      success: false,
+      error: error.message,
+    };
+  }
+
+  return { success: true, error: null };
+};
+
+export const completeProfile = async ({
+  full_name,
+  password,
+}: {
+  full_name: string;
+  password: string;
+}) => {
+  const supabase = await createClient();
+  const user = await getUser();
+
+  if (!user) {
+    throw new Error('User not authenticated');
+  }
+
+  const { error } = await supabase.auth.updateUser({
+    password,
+    data: {
+      full_name: safeStr(full_name),
+    },
+  });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  const { error: profileError } = await supabase.from('profiles').upsert(
+    {
+      id: user.id,
+      full_name: safeStr(full_name),
+      email: safeStr(user.email),
+      image_url: null,
+      is_email_verified: true,
+    },
+    { onConflict: 'id' }
+  );
+
+  if (profileError) {
+    throw new Error(profileError.message);
+  }
+
+  return { success: true };
+};
+
+export const login = async ({
+  email,
+  password,
+}: {
+  email: string;
+  password: string;
+}) => {
+  if (!email || !password) return { error: 'Invalid form input' };
+
+  const supabase = await createClient();
+
+  const { error: authError } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
+
+  if (authError) return { error: authError.message };
+  return {
+    success: true,
+  };
+};
+
+const signInWith = async (provider: Provider) => {
+  const supabase = await createClient();
+
+  const auth_callback_url = `${SITE_URL}/auth/callback`;
+
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider,
+    options: {
+      redirectTo: auth_callback_url,
+    },
+  });
+
+  if (error) {
+    return {
+      success: false,
+      error: error.message,
+    };
+  }
+
+  redirect(data.url);
+};
+
+export const signInWithGoogle = async () => await signInWith('google');
+
+export const logout = async () => {
+  const supabase = await createClient();
+  await supabase.auth.signOut();
+  return { success: true };
+};
+
+export const verifyOtp = async (email: string, token: string) => {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase.auth.verifyOtp({
+    email,
+    token,
+    type: 'email',
+  });
+
+  if (error) {
+    return { success: false, session: null };
+  }
+  return { success: true, session: data.session };
+};
+
+export const resendOtp = async (email: string) => {
+  const supabase = await createClient();
+
+  const { error } = await supabase.auth.signInWithOtp({
+    email,
+  });
+
+  if (error) {
+    return {
+      success: false,
+      error: error.message,
+    };
+  }
+
+  return {
+    success: true,
+  };
+};
+
+export const getUser = async (): Promise<User | null> => {
+  const supabase = await createClient();
+  const { data, error } = await supabase.auth.getUser();
+
+  if (error || !data?.user) return null;
+
+  return data.user;
+};
+
+export const getUserProfile = async () => {
+  const supabase = await createClient();
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError || !user) {
+    return {
+      success: false,
+      error: 'User not authenticated',
+    };
+  }
+
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select()
+    .eq('id', user.id)
+    .single();
+
+  if (profileError) {
+    return {
+      success: false,
+      error: 'Failed to fetch user profile',
+    };
+  }
+
+  // Merge OAuth avatar and metadata with profile data
+  const enrichedProfile = {
+    ...profile,
+    image_url: user.user_metadata?.avatar_url || profile?.image_url,
+    full_name:
+      profile?.full_name ||
+      user.user_metadata?.full_name ||
+      user.email?.split('@')[0],
+  };
+
+  return {
+    success: true,
+    data: enrichedProfile,
+  };
+};
+
+export const resetPassword = async (password: string, email: string) => {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError || !user) {
+    return { success: false, error: 'User not authenticated' };
+  }
+
+  const { error: updateError } = await supabase.auth.updateUser({ password });
+
+  if (updateError) {
+    return { success: false, error: updateError.message };
+  }
+
+  // access profile table for user full name
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select('full_name')
+    .eq('id', user.id)
+    .single();
+
+  if (profileError) {
+    return { success: false, error: profileError.message };
+  }
+
+  // send password reset notification email
+  const customerName = safeStr(profile?.full_name);
+
+  const html = getResetPasswordEmailHTML({ customerName });
+
+  await sendEmail({
+    to: email,
+    subject: `Your password reset was successful`,
+    html,
+    from: 'Homesphere <support@resend.dev>',
+  });
+
+  return {
+    success: true,
+  };
+};
+
+export const resetPasswordForEmail = async (email: string) => {
+  const supabase = await createClient();
+
+  const { error } = await supabase.auth.resetPasswordForEmail(email);
+
+  if (error) {
+    return {
+      success: false,
+      error: error.message,
+    };
+  }
+
+  return { success: true, error: null };
+};
+
+export const completeOnboarding = async ({
+  data,
+}: {
+  data: OnboardingValues;
+}) => {
+  const supabase = await createClient();
+  const user = await getUser();
+
+  if (!user) {
+    throw new Error('User not authenticated');
+  }
+
+  if (!data.meansOfIdentification) {
+    throw new Error('Means of identification file is required');
+  }
+
+  const verificationImg = await uploadFile(
+    data.meansOfIdentification,
+    'verifyAccount',
+    '',
+    user.id
+  );
+
+  if (verificationImg.error) {
+    throw new Error('upload of MOI failed');
+  }
+
+  const { error: profileError } = await supabase.from('profiles').upsert(
+    {
+      id: user.id,
+      phone: data.phone,
+      nationality: data.nationality,
+      bio: data.bio,
+      interest: data.interests,
+      city: data.city,
+      date_of_birth: data.dateOfBirth,
+      verification_img: verificationImg.publicUrl,
+      role: data.role,
+      onboarding_completed: true,
+    },
+    { onConflict: 'id' }
+  );
+
+  if (profileError) {
+    throw new Error(profileError.message);
+  }
+
+  if (user.id && user.email) {
+    const html = getOnboardingEmailHTML(user.user_metadata?.full_name);
+    // send onboarding confirmation email
+    await sendEmail({
+      to: user.email,
+      subject: `Welcome to HomeSphere! Your onboarding is complete.`,
+      html,
+      from: 'HomeSphere <onboarding@resend.dev>',
+    });
+  }
+
+  return { success: true };
+};
