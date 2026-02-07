@@ -23,7 +23,6 @@ import {
 import { DatePicker } from './BrandDatePicker';
 import { cn } from '@/lib/utils';
 import PhoneInput from 'react-phone-number-input';
-// @ts-expect-error - CSS import has no type declarations
 import 'react-phone-number-input/style.css';
 import { useCountriesAndStates } from '@/hooks/useCountriesAndStates';
 
