@@ -33,7 +33,7 @@ export default function RootLayout({
         className={`${hankenGrotesk.variable} ${cardo.variable} antialiased`}
       >
         <QueryProvider>{children}</QueryProvider>
-        <Toaster position="bottom-right" closeButton />
+        <Toaster position="bottom-right" richColors closeButton />
       </body>
     </html>
   );

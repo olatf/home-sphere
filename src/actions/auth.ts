@@ -9,6 +9,7 @@ import { getResetPasswordEmailHTML } from '@/templates/emails/getResetPasswordEm
 import { sendEmail } from './sendEmail';
 import { redirect } from 'next/navigation';
 import { uploadFile } from './uploadFile';
+import { capitalizeWords } from '@/helpers/formatters.helpers';
 import { getOnboardingEmailHTML } from '@/templates/emails/getOnboardingEmail';
 
 export const signUp = async (email: string) => {
@@ -239,7 +240,7 @@ export const resetPassword = async (password: string, email: string) => {
   }
 
   // send password reset notification email
-  const customerName = safeStr(profile?.full_name);
+  const customerName = capitalizeWords(safeStr(profile?.full_name));
 
   const html = getResetPasswordEmailHTML({ customerName });
 
@@ -318,7 +319,9 @@ export const completeOnboarding = async ({
   }
 
   if (user.id && user.email) {
-    const html = getOnboardingEmailHTML(user.user_metadata?.full_name);
+    const html = getOnboardingEmailHTML(
+      capitalizeWords(safeStr(user.user_metadata?.full_name))
+    );
     // send onboarding confirmation email
     await sendEmail({
       to: user.email,
