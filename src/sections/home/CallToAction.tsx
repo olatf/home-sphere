@@ -7,7 +7,7 @@ export const CallToAction = () => {
       <p className="mb-6">
         Join Mestate today and find the perfect property for you.
       </p>
-      <BrandButton asChild className='w-[20%] mx-auto'>
+      <BrandButton asChild className="mx-auto w-[20%]">
         <Link href="/signup">Get Started</Link>
       </BrandButton>
     </section>

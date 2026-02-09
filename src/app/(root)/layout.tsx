@@ -1,4 +1,4 @@
-// import { Footer, Navbar } from "@/components/navigation";
+import Header from '@/components/common/Header';
 import BackToTop from '@/components/common/Back2top';
 
 export default function RootLayout({
@@ -8,7 +8,7 @@ export default function RootLayout({
 }>) {
   return (
     <div>
-      {/* <Navbar /> */}
+      <Header />
       {/* @to-do: try mt-32 */}
       <main className="mt-0">{children}</main>
       {/* <Footer /> */}

@@ -16,17 +16,11 @@ export function buildMetadata({
   url,
 }: BuildMetadataOptions): Metadata {
   const canonical = safeStr(url, SITE_URL);
-  const baseTitle = safeStr(title, 'Chapters and Courses');
-  const isStandardTitle =
-    baseTitle.includes('|') || baseTitle === 'Chapters and Courses';
-  const fullTitle = isStandardTitle
-    ? baseTitle
-    : `${baseTitle} | Chapters and Courses`;
+  const baseTitle = safeStr(title, 'HomeSphere');
+  const isStandardTitle = baseTitle.includes('|') || baseTitle === 'HomeSphere';
+  const fullTitle = isStandardTitle ? baseTitle : `${baseTitle} | HomeSphere`;
   const imageUrl = safeStr(image, `${SITE_URL}/images/logo.webp`);
-  const metaDescription = safeStr(
-    description,
-    'Official Chapters and Courses website.'
-  );
+  const metaDescription = safeStr(description, 'Official HomeSphere website.');
 
   return {
     title: fullTitle,
@@ -43,7 +37,7 @@ export function buildMetadata({
           alt: fullTitle,
         },
       ],
-      siteName: 'Chapters and Courses',
+      siteName: 'HomeSphere',
     },
     twitter: {
       card: 'summary_large_image',
