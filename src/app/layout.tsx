@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { QueryProvider } from '@/providers/QueryProvider';
-
 import { Toaster } from 'sonner';
 import { Cardo, Hanken_Grotesk } from 'next/font/google';
 
@@ -17,9 +16,9 @@ const hankenGrotesk = Hanken_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: 'Mestate',
+  title: 'Homesphere',
   description:
-    'Mestate - Your one stop solution for all your real estate needs',
+    'Homesphere - Your one stop solution for all your real estate needs',
 };
 
 export default function RootLayout({

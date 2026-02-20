@@ -8,6 +8,7 @@ import {
   DrawerTitle,
 } from '@/components/ui/drawer';
 import { ProfileTracker } from '@/components/common/ProfileTracker';
+import { headerLinks } from '@/data/HeaderLinks';
 import { BrandLogo } from './BrandLogo';
 interface MobileMenuProps {
   open: boolean;
@@ -43,23 +44,21 @@ export const MobileMenu = ({
               <BrandLogo />
             </div>
             <ul className="font-primary mt-25 flex flex-col items-center space-y-10 md:space-y-16">
-              <li className="text-center text-3xl font-semibold md:text-6xl">
-                <Link href="#" onClick={onClose} className="group relative">
-                  Marketplace
-                  <span className="absolute -bottom-1 left-0 h-0.5 w-0 bg-white transition-all duration-300 group-hover:w-full"></span>
-                </Link>
-              </li>
-
-              <li className="text-center text-3xl font-semibold md:text-6xl">
-                <Link
-                  href="/members-lounge"
-                  onClick={onClose}
-                  className="group relative"
+              {headerLinks.map(link => (
+                <li
+                  key={link.name}
+                  className="text-center text-3xl font-semibold md:text-6xl"
                 >
-                  Members&apos; Lounge
-                  <span className="absolute -bottom-1 left-0 h-0.5 w-0 bg-white transition-all duration-300 group-hover:w-full"></span>
-                </Link>
-              </li>
+                  <Link
+                    href={link.href}
+                    onClick={onClose}
+                    className="group relative"
+                  >
+                    {link.name}
+                    <span className="absolute -bottom-1 left-0 h-0.5 w-0 bg-white transition-all duration-300 group-hover:w-full"></span>
+                  </Link>
+                </li>
+              ))}
             </ul>
             {isActiveUser ? (
               <div className="mt-auto w-full">

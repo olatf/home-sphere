@@ -308,7 +308,6 @@ export const completeOnboarding = async ({
       city: data.city,
       date_of_birth: data.dateOfBirth,
       verification_img: verificationImg.publicUrl,
-      role: data.role,
       onboarding_completed: true,
     },
     { onConflict: 'id' }
@@ -316,6 +315,18 @@ export const completeOnboarding = async ({
 
   if (profileError) {
     throw new Error(profileError.message);
+  }
+
+  const { error: roleUpdateError } = await supabase.from('users_role').upsert(
+    {
+      id: user.id,
+      role: data.role,
+    },
+    { onConflict: 'id' }
+  );
+
+  if (roleUpdateError) {
+    throw new Error(roleUpdateError.message);
   }
 
   if (user.id && user.email) {
