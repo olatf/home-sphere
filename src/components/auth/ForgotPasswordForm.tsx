@@ -54,19 +54,24 @@ export const ForgotPasswordForm = () => {
 
   return (
     <AnimatedWrapper type="slideInRight">
-      <div className="relative mx-auto mt-20 flex w-full items-center justify-center px-1 md:w-[90%] md:px-6">
-        <Card className="flex w-full max-w-md border shadow md:border-none md:shadow-none">
-          <div className="mx-auto flex justify-center">
+      <div className="relative flex w-full items-center justify-center px-1 md:mx-auto md:w-[90%] md:px-6">
+        <Card className="w-full space-y-10 border px-3 shadow md:max-w-md md:border-none md:px-0 md:shadow-none">
+          <div className="mx-auto flex flex-col justify-center">
             <Link
               href="/"
-              className="font-primary hover:text-brand absolute -top-10 left-0 flex cursor-pointer items-center rounded-full bg-white/90 px-4 py-2 text-center text-sm font-semibold italic shadow lg:hidden"
+              className="font-primary hover:text-brand absolute top-5 left-3 flex cursor-pointer items-center rounded-full bg-white/90 px-4 py-2 text-center text-sm font-semibold italic shadow lg:hidden"
             >
               <Undo2 className="mr-2 size-4" />
               HomeSphere
             </Link>
-            <h1 className="font-secondary mb-1 text-center text-3xl font-bold">
-              Forgot Password?
-            </h1>
+            <div>
+              <h1 className="font-secondary mt-20 mb-1 text-center text-3xl font-bold">
+                Forgot Password?
+              </h1>
+              <p className="font-secondary mt-5 mb-1 text-center text-base font-normal">
+                Enter your registered email to set ur password.
+              </p>
+            </div>
           </div>
 
           <Form {...form}>

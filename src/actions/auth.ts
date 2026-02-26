@@ -54,13 +54,14 @@ export const completeProfile = async ({
     throw new Error(error.message);
   }
 
-  const { error: profileError } = await supabase.from('profiles').upsert(
+  const { error: profileError } = await supabase.from('user_profiles').upsert(
     {
       id: user.id,
       full_name: safeStr(full_name),
       email: safeStr(user.email),
-      image_url: null,
+      avatar_url: null,
       is_email_verified: true,
+      created_at: new Date().toISOString(),
     },
     { onConflict: 'id' }
   );
@@ -181,13 +182,15 @@ export const getUserProfile = async () => {
     };
   }
 
-  const { data: profile, error: profileError } = await supabase
-    .from('profiles')
-    .select()
-    .eq('id', user.id)
-    .single();
+  const [
+    { data: profile, error: profileError },
+    { data: userRole, error: userRoleError },
+  ] = await Promise.all([
+    supabase.from('user_profiles').select().eq('id', user.id).single(),
+    supabase.from('user_roles').select().eq('user_id', user.id).single(),
+  ]);
 
-  if (profileError) {
+  if (profileError || userRoleError) {
     return {
       success: false,
       error: 'Failed to fetch user profile',
@@ -197,11 +200,9 @@ export const getUserProfile = async () => {
   // Merge OAuth avatar and metadata with profile data
   const enrichedProfile = {
     ...profile,
-    image_url: user.user_metadata?.avatar_url || profile?.image_url,
-    full_name:
-      profile?.full_name ||
-      user.user_metadata?.full_name ||
-      user.email?.split('@')[0],
+    role: userRole?.role,
+    image_url: user.user_metadata?.avatar_url || profile?.avatar_url,
+    full_name: profile?.full_name || user.user_metadata?.full_name || 'User',
   };
 
   return {
@@ -289,7 +290,7 @@ export const completeOnboarding = async ({
 
   const verificationImg = await uploadFile(
     data.meansOfIdentification,
-    'verifyAccount',
+    'verification-documents',
     '',
     user.id
   );
@@ -298,7 +299,7 @@ export const completeOnboarding = async ({
     throw new Error('upload of MOI failed');
   }
 
-  const { error: profileError } = await supabase.from('profiles').upsert(
+  const { error: profileError } = await supabase.from('user_profiles').upsert(
     {
       id: user.id,
       phone: data.phone,
@@ -307,8 +308,8 @@ export const completeOnboarding = async ({
       interest: data.interests,
       city: data.city,
       date_of_birth: data.dateOfBirth,
+      updated_at: new Date().toISOString(),
       verification_img: verificationImg.publicUrl,
-      role: data.role,
       onboarding_completed: true,
     },
     { onConflict: 'id' }
@@ -316,6 +317,17 @@ export const completeOnboarding = async ({
 
   if (profileError) {
     throw new Error(profileError.message);
+  }
+
+  const { error: roleUpdateError } = await supabase
+    .from('user_roles')
+    .update({
+      role: data.role,
+    })
+    .eq('user_id', user.id);
+
+  if (roleUpdateError) {
+    throw new Error(roleUpdateError.message);
   }
 
   if (user.id && user.email) {

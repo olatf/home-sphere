@@ -1,11 +1,21 @@
-import { HeroSection, FeaturedProperties, CallToAction } from '@/sections/home';
+import {
+  HeroSection,
+  PropertySummary,
+  AboutUsSection,
+  TeamSection,
+  TestimonialsSection,
+  NewsletterSection,
+} from '@/sections/home';
 
-export default function HomePage() {
+export default function MarketingLanding() {
   return (
     <main className="min-h-screen bg-gray-50">
       <HeroSection />
-      <FeaturedProperties />
-      <CallToAction />
+      <PropertySummary />
+      <AboutUsSection />
+      <TeamSection />
+      <TestimonialsSection />
+      <NewsletterSection />
     </main>
   );
 }

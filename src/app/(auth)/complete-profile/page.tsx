@@ -14,7 +14,7 @@ export default async function CompleteProfilePage({
   }
 
   return (
-    <section className="mx-auto my-3 grid h-screen max-w-6xl overflow-hidden bg-transparent px-3 md:my-10 md:px-7 lg:grid-cols-2">
+    <section className="mx-auto grid h-screen grid-cols-1 px-3 pt-9 md:max-w-6xl md:grid-cols-2 md:px-9 md:pt-10">
       <SideDisplay />
       <CompleteProfileForm email={email} />
     </section>

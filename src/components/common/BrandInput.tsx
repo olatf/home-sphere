@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { UseFormReturn, FieldValues, Path } from 'react-hook-form';
 import {
   FormField,
@@ -12,7 +11,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
-import Image from 'next/image';
+import { BrandImageEditor } from './BrandImageEditor';
 import {
   Select,
   SelectTrigger,
@@ -20,7 +19,7 @@ import {
   SelectContent,
   SelectItem,
 } from '@/components/ui/select';
-import { DatePicker } from './BrandDatePicker';
+import { DateTimePicker } from './BrandDatePicker';
 import { cn } from '@/lib/utils';
 import PhoneInput from 'react-phone-number-input';
 import 'react-phone-number-input/style.css';
@@ -36,9 +35,11 @@ export type InputVariant =
   | 'checkbox'
   | 'file';
 
-interface BrandInputProps<T extends FieldValues> {
+interface BrandInputProps<T extends FieldValues> extends React.ComponentProps<
+  typeof Input
+> {
   name: Path<T>;
-  label: string;
+  label?: string;
   placeholder?: string;
   variant?: InputVariant;
   type?: React.HTMLInputTypeAttribute;
@@ -57,17 +58,10 @@ export function BrandInput<T extends FieldValues>({
   required,
   maxFileSizeMB = 5,
 }: BrandInputProps<T>) {
-  const [filePreview, setFilePreview] = useState<string | null>(null);
   const selectedCountryName = formRef.watch('nationality' as Path<T>);
 
   const { countries, states, isCountriesLoading, isStatesLoading } =
     useCountriesAndStates(selectedCountryName);
-
-  useEffect(() => {
-    return () => {
-      if (filePreview) URL.revokeObjectURL(filePreview);
-    };
-  }, [filePreview]);
 
   const baseClass = `font-tertiary italic text-base font-normal text-[#535A63] border-0 border-b-2 border-[#D0D5DD] rounded-none bg-transparent px-0 shadow-none focus:border-b focus:border-brand focus:ring-0 focus:outline-none focus-visible:border-b focus-visible:border-brand focus-visible:ring-0 focus-visible:outline-none`;
 
@@ -91,7 +85,7 @@ export function BrandInput<T extends FieldValues>({
                       <PhoneInput
                         international
                         defaultCountry="NG"
-                        value={field.value}
+                        value={field.value ?? undefined}
                         limitMaxLength={true}
                         onChange={field.onChange}
                         className="h-11 w-full bg-transparent text-sm"
@@ -104,7 +98,7 @@ export function BrandInput<T extends FieldValues>({
                     <Textarea
                       {...field}
                       placeholder={placeholder}
-                      className={cn(baseClass)}
+                      className={cn(`min-h-10`, baseClass)}
                     />
                   );
 
@@ -166,11 +160,12 @@ export function BrandInput<T extends FieldValues>({
 
                 case 'date':
                   return (
-                    <div className="text-brand w-[30%]">
-                      <DatePicker
+                    <div className="text-brand w-[35%]">
+                      <DateTimePicker
                         value={field.value}
+                        showTimePicker={false}
                         onChange={field.onChange}
-                        fromYear={1940}
+                        minAge={18}
                       />
                     </div>
                   );
@@ -178,36 +173,16 @@ export function BrandInput<T extends FieldValues>({
                 case 'file':
                   return (
                     <div className="space-y-2">
-                      <Input
-                        type="file"
-                        accept="image/*"
-                        onChange={e => {
-                          const file = e.target.files?.[0];
-                          if (!file) return;
-
-                          if (file.size > maxFileSizeMB * 1024 * 1024) {
-                            formRef.setError(name, {
-                              message: `File must be under ${maxFileSizeMB}MB`,
-                            });
-                            return;
-                          }
-
-                          const preview = URL.createObjectURL(file);
-                          setFilePreview(preview);
-                          field.onChange(file);
-                        }}
+                      <BrandImageEditor
+                        control={formRef.control}
+                        name={name}
+                        existingImageUrl={
+                          typeof field.value === 'string'
+                            ? field.value
+                            : undefined
+                        }
+                        maxFileSizeMB={maxFileSizeMB}
                       />
-
-                      {filePreview && (
-                        <div className="relative h-18 w-34">
-                          <Image
-                            src={filePreview}
-                            alt="Preview"
-                            fill
-                            className="rounded-xl object-cover"
-                          />
-                        </div>
-                      )}
                     </div>
                   );
 

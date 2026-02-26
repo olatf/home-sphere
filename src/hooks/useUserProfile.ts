@@ -19,6 +19,7 @@ export function useUserProfile() {
 
   return {
     isUserAuthenticated: !!data,
+    isOnboarded: data?.onboarding_complete,
     profile: data ?? null,
     isLoading,
     error,

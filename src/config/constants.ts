@@ -8,7 +8,7 @@ export const RESEND_EMAIL_URL = 'https://api.resend.com/emails';
 
 export const SideDisplayMedia: Array<{ src: string; alt: string }> = [
   {
-    src: '/images/house_1.webp',
+    src: '/images/house_11.webp',
     alt: 'Real estate houses',
   },
   {
@@ -20,11 +20,11 @@ export const SideDisplayMedia: Array<{ src: string; alt: string }> = [
     alt: 'Real estate houses',
   },
   {
-    src: '/images/house_4.webp',
+    src: '/images/house_8.webp',
     alt: 'Real estate houses',
   },
   {
-    src: '/images/house_5.webp',
+    src: '/images/house_9.webp',
     alt: 'Real estate houses',
   },
 ];

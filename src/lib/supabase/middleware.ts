@@ -1,28 +1,19 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
+import { hasPermission, type Role } from '@/lib/accessPolice';
 
 export const updateSession = async (request: NextRequest) => {
-  let supabaseResponse = NextResponse.next({
-    request,
-  });
+  const response = NextResponse.next({ request });
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
     {
       cookies: {
-        getAll() {
-          return request.cookies.getAll();
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value)
-          );
-          supabaseResponse = NextResponse.next({
-            request,
-          });
+        getAll: () => request.cookies.getAll(),
+        setAll: cookiesToSet => {
           cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
+            response.cookies.set(name, value, options)
           );
         },
       },
@@ -33,92 +24,102 @@ export const updateSession = async (request: NextRequest) => {
     data: { user },
   } = await supabase.auth.getUser();
 
+  const pathname = request.nextUrl.pathname;
+
   const authPages = [
     '/sign-in',
     '/sign-up',
     '/verify-otp',
     '/forgot-password',
     '/reset-password',
-    'set-password',
+    '/set-password',
   ];
-  const protectedRoutes = ['/dashboard', 'onboarding', '/admin'];
 
-  const isAuthPage = authPages.some(page =>
-    request.nextUrl.pathname.startsWith(page)
-  );
+  const protectedRoutes = ['/dashboard', '/admin', '/onboarding'];
 
-  const isProtectedRoute = protectedRoutes.some(route =>
-    request.nextUrl.pathname.startsWith(route)
-  );
+  const isAuthPage = authPages.some(p => pathname.startsWith(p));
+  const isProtected = protectedRoutes.some(p => pathname.startsWith(p));
 
-  // Allow OAuth callback to complete without any checks
-  if (request.nextUrl.pathname.startsWith('/auth/callback')) {
-    return supabaseResponse;
+  // Allow callback
+  if (pathname.startsWith('/auth/callback')) {
+    return response;
   }
 
-  // If accessing a protected route without authentication, redirect to create-account
-  if (!user && isProtectedRoute) {
-    const url = request.nextUrl.clone();
-    url.pathname = '/sign-in';
-    return NextResponse.redirect(url);
-  }
-
-  // If no user and not accessing protected route or auth page, allow access (public routes)
+  // Not logged in
   if (!user) {
-    return supabaseResponse;
-  }
-
-  // If authenticated user tries to access auth pages, redirect to dashboard
-  // but allow temporary access to /reset-password
-  if (isAuthPage) {
-    if (
-      request.nextUrl.pathname.startsWith('/reset-password') &&
-      request.nextUrl.searchParams.get('email') &&
-      request.cookies.getAll().some(c => c.name.startsWith('sb-'))
-    ) {
-      return supabaseResponse;
+    if (isProtected) {
+      const url = request.nextUrl.clone();
+      url.pathname = '/sign-in';
+      return NextResponse.redirect(url);
     }
 
-    const url = request.nextUrl.clone();
-    url.pathname = '/dashboard';
-    return NextResponse.redirect(url);
+    return response;
   }
 
-  // Only check profile and onboarding status for protected routes
-  if (!isProtectedRoute) {
-    return supabaseResponse;
-  }
+  // Logged in → fetch profile + role ONCE
+  const [{ data: profile }, { data: userRole }] = await Promise.all([
+    supabase
+      .from('user_profiles')
+      .select('is_email_verified, onboarding_completed')
+      .eq('id', user.id)
+      .single(),
+    supabase.from('user_roles').select('role').eq('user_id', user.id).single(),
+  ]);
 
-  // User has session and accessing protected route - check profile and onboarding status
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('full_name,is_email_verified, onboarding_completed, role')
-    .eq('id', user.id)
-    .single();
-
-  // If user has session but no profile, redirect to create-account
   if (!profile) {
     const url = request.nextUrl.clone();
     url.pathname = '/sign-up';
     return NextResponse.redirect(url);
   }
 
-  // If user has session and profile but no onboarding, redirect to onboarding
-  if (!profile.onboarding_completed && profile.is_email_verified) {
+  const role = userRole?.role as Role | undefined;
+
+  const isAdmin =
+    role &&
+    (hasPermission(role, 'admin:access') ||
+      hasPermission(role, 'superAdmin:access') ||
+      hasPermission(role, 'administrator:access'));
+
+  // Enforce onboarding
+  if (
+    !profile.onboarding_completed &&
+    profile.is_email_verified &&
+    !pathname.startsWith('/onboarding')
+  ) {
     const url = request.nextUrl.clone();
     url.pathname = '/onboarding';
     return NextResponse.redirect(url);
   }
 
-  const isAdmin = profile.role
-    .toLowerCase()
-    .includes(['admin', 'super-admin', 'administrator']);
-
-  if (request.nextUrl.pathname.startsWith('/dashboard') || isAdmin) {
+  // Prevent completed users from revisiting onboarding
+  if (profile.onboarding_completed && pathname.startsWith('/onboarding')) {
     const url = request.nextUrl.clone();
-    url.pathname = '/admin';
+    url.pathname = isAdmin ? '/admin' : '/dashboard';
     return NextResponse.redirect(url);
   }
 
-  return supabaseResponse;
+  // Block auth pages for logged-in users
+
+  if (isAuthPage) {
+    if (
+      pathname.startsWith('/reset-password') &&
+      request.nextUrl.searchParams.get('email') &&
+      request.cookies.getAll().some(c => c.name.startsWith('sb-'))
+    ) {
+      return response;
+    }
+
+    const url = request.nextUrl.clone();
+    url.pathname = isAdmin ? '/admin' : '/dashboard';
+    return NextResponse.redirect(url);
+  }
+
+  // Protect admin route
+  if (pathname.startsWith('/admin') && !isAdmin) {
+    const url = request.nextUrl.clone();
+    url.pathname = '/dashboard';
+    return NextResponse.redirect(url);
+  }
+
+  return response;
 };

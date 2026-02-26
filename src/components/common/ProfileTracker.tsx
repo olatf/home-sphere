@@ -13,10 +13,11 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { safeStr } from '@/helpers/data.helpers';
 import { useUserProfile } from '@/hooks/useUserProfile';
+import { capitalizeWords } from '@/helpers/formatters.helpers';
 import { cn } from '@/lib/utils';
 import { If } from './If';
 
-export const ProfileTracker = () => {
+export const ProfileTracker = ({ isScrolled }: { isScrolled?: boolean }) => {
   const [open, setOpen] = useState(false);
   const { profile } = useUserProfile();
   const router = useRouter();
@@ -27,7 +28,7 @@ export const ProfileTracker = () => {
   };
 
   const buttonClass =
-    'bg-brand-primary border border-brand-primary text-white hover:bg-brand/70 hover:text-brand-primary min-h-12 rounded-[45px] px-6 text-base font-secondary';
+    'border text-brand-dark hover:bg-brand-dark hover:text-white min-h-12 rounded-[45px] px-6 text-base font-secondary';
 
   if (!profile) {
     return null;
@@ -82,7 +83,8 @@ export const ProfileTracker = () => {
             <div
               className={cn(
                 'flex items-center justify-center gap-3 rounded-full px-4 py-3 text-base text-white',
-                buttonClass
+                buttonClass,
+                isScrolled ? 'text-brand bg-white' : 'bg-transparent text-white'
               )}
             >
               <div className="text-left">
@@ -113,9 +115,9 @@ export const ProfileTracker = () => {
                 {' '}
                 {safeStr(profile?.email)}
               </p>
-              <If cond={profile?.role !== null}>
+              <If cond={Boolean(profile?.role)}>
                 <p className="text-sm text-gray-600">
-                  Role: {safeStr(profile?.role)}
+                  Role: {capitalizeWords(safeStr(profile?.role))}
                 </p>
               </If>
             </div>

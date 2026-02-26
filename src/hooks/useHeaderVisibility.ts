@@ -10,7 +10,7 @@ import { useEffect, useRef, useState } from 'react';
  * @param threshold How far (in pixels) to scroll down before hiding the header.
  */
 export const useHeaderVisibility = (threshold: number = 100) => {
-  const [visible, setVisible] = useState(true);
+  const [visible, setVisible] = useState(false);
   const lastScroll = useRef(0);
 
   useEffect(() => {
@@ -30,6 +30,7 @@ export const useHeaderVisibility = (threshold: number = 100) => {
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll(); // Set initial state
     return () => window.removeEventListener('scroll', handleScroll);
   }, [threshold]);
 
