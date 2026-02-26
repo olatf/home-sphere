@@ -9,6 +9,8 @@ import { BrandStarRating } from '@/components/common/BrandStarRating';
 import { BrandButton } from '@/components/common/BrandButton';
 import AnimatedWrapper from '@/components/common/AnimatedWrapper';
 import { usePropertyFilter } from '@/hooks/usePropertyFilter';
+import { type PropertyTypes } from '@/types/property';
+import { capitalizeWords } from '@/helpers/formatters.helpers';
 
 export const PropertySummary = () => {
   const { paginatedItems } = usePropertyFilter(mockProperties);
@@ -40,7 +42,9 @@ export const PropertySummary = () => {
           </div>
         </div>
         <div className="mx-auto mt-9 flex max-w-md items-center justify-center">
-          <BrandButton>Explore More</BrandButton>
+          <BrandButton asChild>
+            <Link href="/properties">Explore More</Link>
+          </BrandButton>
         </div>
       </AnimatedWrapper>
     </section>
@@ -52,6 +56,7 @@ type PropertyCardProps = {
   title: string;
   location: string;
   price: number;
+  propertyType: PropertyTypes;
   bedrooms: number;
   rating: number;
   bathrooms: number;
@@ -64,6 +69,7 @@ export const PropertyCard = ({
   location,
   price,
   bedrooms,
+  propertyType,
   bathrooms,
   rating,
   image,
@@ -92,14 +98,19 @@ export const PropertyCard = ({
             {location}
           </div>
 
+          <div className="text-muted-foreground flex items-center gap-2 text-sm">
+            <MapPin size={16} className="text-green-600" />
+            Property Type: {capitalizeWords(propertyType)}
+          </div>
+
           <div className="flex items-center justify-between pt-2">
             <div className="flex items-center gap-4 text-sm text-zinc-700">
               <span className="flex items-center gap-1">
-                <BedDouble size={16} />
+                <BedDouble size={16} className="text-green-600" />
                 {bedrooms} Bed
               </span>
               <span className="flex items-center gap-1">
-                <Bath size={16} />
+                <Bath size={16} className="text-green-600" />
                 {bathrooms} Bath
               </span>
             </div>

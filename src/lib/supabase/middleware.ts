@@ -3,23 +3,17 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { hasPermission, type Role } from '@/lib/accessPolice';
 
 export const updateSession = async (request: NextRequest) => {
-  let supabaseResponse = NextResponse.next({ request });
+  const response = NextResponse.next({ request });
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
     {
       cookies: {
-        getAll() {
-          return request.cookies.getAll();
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value)
-          );
-          supabaseResponse = NextResponse.next({ request });
+        getAll: () => request.cookies.getAll(),
+        setAll: cookiesToSet => {
           cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
+            response.cookies.set(name, value, options)
           );
         },
       },
@@ -30,6 +24,8 @@ export const updateSession = async (request: NextRequest) => {
     data: { user },
   } = await supabase.auth.getUser();
 
+  const pathname = request.nextUrl.pathname;
+
   const authPages = [
     '/sign-in',
     '/sign-up',
@@ -39,108 +35,91 @@ export const updateSession = async (request: NextRequest) => {
     '/set-password',
   ];
 
-  const protectedRoutes = ['/dashboard', '/onboarding', '/admin'];
+  const protectedRoutes = ['/dashboard', '/admin', '/onboarding'];
 
-  const pathname = request.nextUrl.pathname;
+  const isAuthPage = authPages.some(p => pathname.startsWith(p));
+  const isProtected = protectedRoutes.some(p => pathname.startsWith(p));
 
-  const isAuthPage = authPages.some(page => pathname.startsWith(page));
-  const isProtectedRoute = protectedRoutes.some(route =>
-    pathname.startsWith(route)
-  );
-
-  // Allow OAuth callback to complete without any checks
-  if (pathname.startsWith('/auth/callback')) return supabaseResponse;
-
-  // If accessing a protected route without authentication, redirect to sign-in
-  if (!user && isProtectedRoute) {
-    const url = request.nextUrl.clone();
-    url.pathname = '/sign-in';
-    return NextResponse.redirect(url);
+  // Allow callback
+  if (pathname.startsWith('/auth/callback')) {
+    return response;
   }
 
-  // If no user and not accessing protected route or auth page, allow access (public routes)
-  if (!user) return supabaseResponse;
-
-  // If authenticated user tries to access auth pages, redirect according to role
-  // but allow temporary access to /reset-password when session/cookies exist
-  if (isAuthPage) {
-    if (
-      pathname.startsWith('/reset-password') &&
-      request.nextUrl.searchParams.get('email') &&
-      request.cookies.getAll().some(c => c.name.startsWith('sb-'))
-    ) {
-      return supabaseResponse;
+  // Not logged in
+  if (!user) {
+    if (isProtected) {
+      const url = request.nextUrl.clone();
+      url.pathname = '/sign-in';
+      return NextResponse.redirect(url);
     }
 
-    // fetch profile to determine role so we can route admins to admin dashboard
-    const { data: profile } = await supabase
-      .from('users_role')
-      .select('role')
+    return response;
+  }
+
+  // Logged in → fetch profile + role ONCE
+  const [{ data: profile }, { data: userRole }] = await Promise.all([
+    supabase
+      .from('user_profiles')
+      .select('is_email_verified, onboarding_completed')
       .eq('id', user.id)
-      .single();
+      .single(),
+    supabase.from('user_roles').select('role').eq('user_id', user.id).single(),
+  ]);
 
-    if (!profile) {
-      const url = request.nextUrl.clone();
-      url.pathname = '/sign-up';
-      return NextResponse.redirect(url);
-    }
-
-    if (profile?.role as Role | null | undefined) {
-      const isAdmin =
-        hasPermission(profile.role as Role, 'admin:access') ||
-        hasPermission(profile.role as Role, 'superAdmin:access') ||
-        hasPermission(profile.role as Role, 'administrator:access');
-
-      const isTenant = hasPermission(profile.role as Role, 'tenant:access');
-
-      if (isTenant) {
-        const url = request.nextUrl.clone();
-        url.pathname = '/tenant';
-        return NextResponse.redirect(url);
-      }
-      const isLandlord = hasPermission(profile.role as Role, 'landlord:access');
-
-      if (isLandlord) {
-        const url = request.nextUrl.clone();
-        url.pathname = '/landlord';
-        return NextResponse.redirect(url);
-      }
-      if (isAdmin) {
-        const url = request.nextUrl.clone();
-        url.pathname = '/admin';
-        return NextResponse.redirect(url);
-      }
-    } else {
-      const url = request.nextUrl.clone();
-      url.pathname = '/';
-      return NextResponse.redirect(url);
-    }
-  }
-
-  // Only check profile and onboarding status for protected routes
-  if (!isProtectedRoute) return supabaseResponse;
-
-  // User has session and accessing protected route - check profile and onboarding status
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('full_name,is_email_verified,onboarding_completed,role')
-    .eq('id', user.id)
-    .single();
-
-  // If user has session but no profile, redirect to sign-up
   if (!profile) {
     const url = request.nextUrl.clone();
     url.pathname = '/sign-up';
     return NextResponse.redirect(url);
   }
 
-  // If user has session and profile but onboarding incomplete, redirect to onboarding
-  if (!profile.onboarding_completed && profile.is_email_verified) {
+  const role = userRole?.role as Role | undefined;
+
+  const isAdmin =
+    role &&
+    (hasPermission(role, 'admin:access') ||
+      hasPermission(role, 'superAdmin:access') ||
+      hasPermission(role, 'administrator:access'));
+
+  // Enforce onboarding
+  if (
+    !profile.onboarding_completed &&
+    profile.is_email_verified &&
+    !pathname.startsWith('/onboarding')
+  ) {
     const url = request.nextUrl.clone();
     url.pathname = '/onboarding';
     return NextResponse.redirect(url);
   }
 
-  // Otherwise allow the request
-  return supabaseResponse;
+  // Prevent completed users from revisiting onboarding
+  if (profile.onboarding_completed && pathname.startsWith('/onboarding')) {
+    const url = request.nextUrl.clone();
+    url.pathname = isAdmin ? '/admin' : '/dashboard';
+    return NextResponse.redirect(url);
+  }
+
+  // Block auth pages for logged-in users
+
+  if (isAuthPage) {
+    if (
+      pathname.startsWith('/reset-password') &&
+      request.nextUrl.searchParams.get('email') &&
+      request.cookies.getAll().some(c => c.name.startsWith('sb-'))
+    ) {
+      return response;
+    }
+
+    const url = request.nextUrl.clone();
+    url.pathname = isAdmin ? '/admin' : '/dashboard';
+    return NextResponse.redirect(url);
+  }
+
+  // Protect admin route
+  if (pathname.startsWith('/admin') && !isAdmin) {
+    const url = request.nextUrl.clone();
+    url.pathname = '/dashboard';
+    return NextResponse.redirect(url);
+  }
+
+  return response;
 };

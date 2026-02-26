@@ -1,14 +1,13 @@
 import { create } from 'zustand';
-import { type PropertyMode } from '@/types/property';
+import { type PropertyMode, type PropertyTypes } from '@/types/property';
 
 export type FilterState = {
   mode: PropertyMode;
   location: string;
   type: string;
-  bedrooms: string;
   minPrice: string;
   maxPrice: string;
-  bathrooms: string;
+  propertyTypes: PropertyTypes;
   sortBy: 'latest' | 'price-asc' | 'price-desc';
   page: number;
 };
@@ -24,8 +23,7 @@ const initialState: FilterState = {
   mode: 'all',
   location: '',
   type: '',
-  bedrooms: '',
-  bathrooms: '',
+  propertyTypes: 'all',
   minPrice: '',
   maxPrice: '',
   sortBy: 'latest',

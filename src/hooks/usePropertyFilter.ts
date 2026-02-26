@@ -8,8 +8,7 @@ export const usePropertyFilter = (properties: Property[], itemsPerPage = 6) => {
   const filteredItems = useMemo(() => {
     return properties
       .filter(property => {
-        const { mode, location, bedrooms, bathrooms, minPrice, maxPrice } =
-          filters;
+        const { mode, location, propertyTypes, minPrice, maxPrice } = filters;
 
         if (mode !== 'all' && property.mode !== mode) return false;
         if (
@@ -17,8 +16,12 @@ export const usePropertyFilter = (properties: Property[], itemsPerPage = 6) => {
           !property.location.toLowerCase().includes(location.toLowerCase())
         )
           return false;
-        if (bedrooms && property.bedrooms < Number(bedrooms)) return false;
-        if (bathrooms && property.bathrooms < Number(bathrooms)) return false;
+        if (
+          propertyTypes !== 'all' &&
+          propertyTypes &&
+          !propertyTypes.includes(property.propertyType)
+        )
+          return false;
         if (minPrice && property.price < Number(minPrice)) return false;
         if (maxPrice && property.price > Number(maxPrice)) return false;
 

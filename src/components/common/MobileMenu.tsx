@@ -23,7 +23,7 @@ export const MobileMenu = ({
 }: MobileMenuProps) => {
   return (
     <Drawer open={open} onOpenChange={onClose} direction={'right'}>
-      <DrawerContent className="bg-brand-primary z-100 min-w-full border-none! p-2">
+      <DrawerContent className="z-100 min-w-full border-none! bg-zinc-900 p-2 text-center">
         <div className="font-secondary size-full rounded-xl p-5 text-white">
           <DrawerHeader className="sr-only">
             <DrawerTitle>Mobile Menu</DrawerTitle>
@@ -65,7 +65,11 @@ export const MobileMenu = ({
                 <ProfileTracker />
               </div>
             ) : (
-              <BrandButton asChild className="absolute bottom-2 w-full">
+              <BrandButton
+                asChild
+                brandVariant="primary"
+                className="absolute bottom-2 min-h-15 w-full"
+              >
                 <Link href="/sign-in">Sign In</Link>
               </BrandButton>
             )}

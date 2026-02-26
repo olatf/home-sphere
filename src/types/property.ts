@@ -1,6 +1,13 @@
 export type PropertyMode = 'buy' | 'rent' | 'lease' | 'all';
 
-export type PropertyType = 'apartment' | 'house' | 'duplex' | 'villa';
+export type PropertyTypes =
+  | 'apartment'
+  | 'selfcon'
+  | 'duplex'
+  | 'villa'
+  | 'semi-detached'
+  | 'condo'
+  | 'all';
 
 export type Property = {
   id: string;
@@ -10,6 +17,7 @@ export type Property = {
   bathrooms: number;
   rating: number;
   location: string;
+  propertyType: PropertyTypes;
   mode: PropertyMode;
   image: string;
 };

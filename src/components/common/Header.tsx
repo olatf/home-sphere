@@ -3,7 +3,6 @@
 import { Menu } from 'lucide-react';
 import Link from 'next/link';
 import React from 'react';
-import AnimatedWrapper from '@/components/common/AnimatedWrapper';
 import { BrandLoader } from './BrandLoader';
 import { BrandLogo } from './BrandLogo';
 import { useScroll } from '@/hooks/useScroll';
@@ -35,23 +34,21 @@ export default function Header() {
     <React.Fragment>
       <header
         className={cn(
-          'fixed top-0 left-0 z-100 w-full transform transition-all duration-300',
+          'fixed top-0 left-0 z-50 w-full transform transition-all duration-300',
           isVisible ? 'translate-y-0' : '-translate-y-full',
           scrolled
             ? 'bg-white/70 backdrop-blur-md'
             : 'text-brand bg-transparent'
         )}
       >
-        <AnimatedWrapper type="slideInDown" delay={0}>
-          <DesktopNav
-            isLoading={isLoading}
-            isScrolled={scrolled}
-            isUserAuthenticated={isUserAuthenticated}
-            pathname={pathname}
-          />
+        <DesktopNav
+          isLoading={isLoading}
+          isScrolled={scrolled}
+          isUserAuthenticated={isUserAuthenticated}
+          pathname={pathname}
+        />
 
-          <MobileNav openMenu={openMenu} />
-        </AnimatedWrapper>
+        <MobileNav openMenu={openMenu} isScrolled={scrolled} />
       </header>
 
       <MobileMenu
@@ -119,10 +116,16 @@ const DesktopNav = ({
   );
 };
 
-const MobileNav = ({ openMenu }: { openMenu: () => void }) => {
+const MobileNav = ({
+  openMenu,
+  isScrolled,
+}: {
+  openMenu: () => void;
+  isScrolled: boolean;
+}) => {
   return (
-    <nav className="flex justify-between border border-black px-4 py-2 lg:hidden">
-      <BrandLogo />
+    <nav className="my-5 flex w-full justify-between px-4 py-2 lg:hidden">
+      <BrandLogo isScrolled={isScrolled} />
 
       <div className="flex items-center gap-4">
         <button
@@ -131,7 +134,9 @@ const MobileNav = ({ openMenu }: { openMenu: () => void }) => {
           aria-label="Open Menu"
           onClick={openMenu}
         >
-          <Menu className={cn('size-7 text-black')} />
+          <Menu
+            className={cn('size-7', isScrolled ? 'text-brand' : 'text-white')}
+          />
         </button>
       </div>
     </nav>

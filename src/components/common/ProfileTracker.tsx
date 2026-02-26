@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { safeStr } from '@/helpers/data.helpers';
 import { useUserProfile } from '@/hooks/useUserProfile';
+import { capitalizeWords } from '@/helpers/formatters.helpers';
 import { cn } from '@/lib/utils';
 import { If } from './If';
 
@@ -114,9 +115,9 @@ export const ProfileTracker = ({ isScrolled }: { isScrolled?: boolean }) => {
                 {' '}
                 {safeStr(profile?.email)}
               </p>
-              <If cond={profile?.role !== null}>
+              <If cond={Boolean(profile?.role)}>
                 <p className="text-sm text-gray-600">
-                  Role: {safeStr(profile?.role)}
+                  Role: {capitalizeWords(safeStr(profile?.role))}
                 </p>
               </If>
             </div>
