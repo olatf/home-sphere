@@ -1,6 +1,10 @@
 'use server';
 
-import { RESEND_API_KEY, RESEND_EMAIL_URL } from '@/config/constants';
+import {
+  DEFAULT_EMAIL_SEND_FROM,
+  RESEND_API_KEY,
+  RESEND_EMAIL_URL,
+} from '@/config/constants';
 
 /**
  * Generic email sender using Resend API.
@@ -8,19 +12,29 @@ import { RESEND_API_KEY, RESEND_EMAIL_URL } from '@/config/constants';
  * @param to - Recipient email address
  * @param subject - Email subject line
  * @param html - HTML body of the email
- * @param from - (optional) Sender email. Defaults to FP&A <onboarding@ahonsi.com>
+ * @param from - (optional) Sender email. Defaults to HomeSphere <onboarding@resend.dev>
  */
 export async function sendEmail({
   to,
   subject,
   html,
-  from = 'HomeSphere <onboarding@resend.dev>',
+  from = DEFAULT_EMAIL_SEND_FROM,
+  attachments,
 }: {
   to: string | string[];
   subject: string;
   html: string;
   from?: string;
+  attachments?: Array<{
+    filename: string;
+    content: string;
+    contentType?: string;
+  }>;
 }) {
+  if (!RESEND_API_KEY) {
+    throw new Error('Missing RESEND_API_KEY configuration');
+  }
+
   const response = await fetch(RESEND_EMAIL_URL, {
     method: 'POST',
     headers: {
@@ -32,14 +46,29 @@ export async function sendEmail({
       to,
       subject,
       html,
+      ...(attachments?.length ? { attachments } : {}),
     }),
   });
 
   if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(
-      `Failed to send email: ${errorData.message || response.statusText}`
-    );
+    let errorMessage = response.statusText;
+
+    try {
+      const errorData = (await response.json()) as { message?: string };
+      if (errorData?.message) {
+        errorMessage = errorData.message;
+      }
+    } catch {
+      try {
+        const text = await response.text();
+        if (text) errorMessage = text;
+      } catch {
+        // no-op
+      }
+    }
+
+    throw new Error(`Resend send failed (${response.status}): ${errorMessage}`);
   }
-  return await response.json();
+
+  return response.json();
 }

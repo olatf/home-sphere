@@ -1,6 +1,7 @@
 import { UseFormReturn } from 'react-hook-form';
 import { OnboardingValues } from '@/lib/schemas/onboarding';
 import { BrandInput } from '@/components/common/BrandInput';
+import { BrandMultiTextInput } from '@/components/common/BrandMultiTextInput';
 
 export default function PersonalStep({
   form,
@@ -23,12 +24,11 @@ export default function PersonalStep({
         variant="textarea"
         required
       />
-      <BrandInput
-        formRef={form}
-        name="interests"
+      <BrandMultiTextInput
+        name="interest"
         label="Interests"
-        variant="textarea"
-        required
+        form={form}
+        placeholder="Add your interests"
       />
     </div>
   );

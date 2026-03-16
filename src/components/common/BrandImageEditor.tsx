@@ -10,12 +10,14 @@ interface FeaturedImageFieldProps<T extends FieldValues> {
   control: Control<T>;
   name: Path<T>;
   existingImageUrl?: string;
+  accept_types?: string;
   maxFileSizeMB?: number;
 }
 
 export function BrandImageEditor<T extends FieldValues>({
   control,
   name,
+  accept_types = 'PNG, JPG, WEBP',
   existingImageUrl,
   maxFileSizeMB,
 }: FeaturedImageFieldProps<T>) {
@@ -104,7 +106,7 @@ export function BrandImageEditor<T extends FieldValues>({
                     Click to upload image
                   </span>
                   <span className="mt-1 text-xs text-gray-400">
-                    {`PNG, JPG, WEBP up to ${maxFileSizeMB}MB`}
+                    {` ${accept_types} up to ${maxFileSizeMB}MB`}
                   </span>
                   <input
                     ref={inputRef}

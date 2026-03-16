@@ -123,7 +123,7 @@ export const ProfileTracker = ({ isScrolled }: { isScrolled?: boolean }) => {
             </div>
 
             <DropdownMenuItem className="cursor-pointer text-sm">
-              <Link href="/account">My Account</Link>
+              <Link href="/dashboard">My Account</Link>
             </DropdownMenuItem>
 
             <DropdownMenuItem
