@@ -9,8 +9,7 @@ type Permission =
   | 'admin:access'
   | 'superAdmin:access'
   | 'administrator:access'
-  | 'landlord:access'
-  | 'tenant:access'
+  | 'dashboard:access'
   | 'manage-properties:access'
   | 'book-inspect:access'
   | 'approve-properties:access'
@@ -19,7 +18,7 @@ type Permission =
 
 type PermissionCheck = boolean;
 
-const rolePermissions: Record<
+const accessPolice: Record<
   Role,
   Partial<Record<Permission, PermissionCheck>>
 > = {
@@ -40,11 +39,11 @@ const rolePermissions: Record<
     'verify-accounts:access': true,
   },
   landlord: {
-    'landlord:access': true,
+    'dashboard:access': true,
     'manage-properties:access': true,
   },
   tenant: {
-    'tenant:access': true,
+    'dashboard:access': true,
     'book-inspect:access': true,
   },
   administrator: {
@@ -58,5 +57,5 @@ export function hasPermission(
   permission: Permission
 ): boolean {
   if (!role) return false;
-  return rolePermissions[role]?.[permission] ?? false;
+  return accessPolice[role]?.[permission] ?? false;
 }

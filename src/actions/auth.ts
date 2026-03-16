@@ -284,20 +284,32 @@ export const completeOnboarding = async ({
     throw new Error('User not authenticated');
   }
 
-  if (!data.meansOfIdentification) {
-    throw new Error('Means of identification file is required');
+  if (!data.meansOfIdentification && !data.selfieImage) {
+    throw new Error(
+      'Either means of identification or selfie image file is required'
+    );
   }
 
-  const verificationImg = await uploadFile(
-    data.meansOfIdentification,
-    'verification-documents',
-    '',
-    user.id
-  );
+  const uploads = await Promise.all([
+    uploadFile(data.selfieImage, 'verification-documents', '', user.id, false),
+    uploadFile(
+      data.meansOfIdentification,
+      'verification-documents',
+      '',
+      user.id,
+      false
+    ),
+  ]);
 
-  if (verificationImg.error) {
-    throw new Error('upload of MOI failed');
-  }
+  const [selfieImg, verificationImg] = uploads;
+
+  uploads.forEach(upload => {
+    if (upload.error || !upload.filePath) {
+      throw new Error(upload.error ?? 'Upload failed');
+    }
+  });
+
+  const verification_status = 'documents_submitted';
 
   const { error: profileError } = await supabase.from('user_profiles').upsert(
     {
@@ -305,11 +317,15 @@ export const completeOnboarding = async ({
       phone: data.phone,
       nationality: data.nationality,
       bio: data.bio,
-      interest: data.interests,
+      interest: data.interest,
       city: data.city,
       date_of_birth: data.dateOfBirth,
       updated_at: new Date().toISOString(),
-      verification_img: verificationImg.publicUrl,
+      verification_img: verificationImg.filePath,
+      selfie_img: selfieImg.filePath,
+      verification_status,
+      id_type: data.idType,
+      id_number: data.idNumber,
       onboarding_completed: true,
     },
     { onConflict: 'id' }
@@ -337,7 +353,7 @@ export const completeOnboarding = async ({
     // send onboarding confirmation email
     await sendEmail({
       to: user.email,
-      subject: `Welcome to HomeSphere! Your onboarding is complete.`,
+      subject: `Welcome to HomeSphere! Your onboarding is complete. Verification underway...`,
       html,
       from: 'HomeSphere <onboarding@resend.dev>',
     });

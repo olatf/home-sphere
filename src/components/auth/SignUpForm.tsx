@@ -38,7 +38,8 @@ export const SignUpForm = () => {
 
         if (!result.success) {
           const errorMessage = getErrorMessage(result.error);
-          throw new Error(errorMessage);
+          toast.error(errorMessage);
+          return;
         }
 
         setEmail(values.email);

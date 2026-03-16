@@ -1,39 +1,22 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
-/**
- * Dynamically uploads a file to any Supabase Storage bucket (server-side safe).
- *
- * @param file - The file to upload (from client input)
- * @param bucket - The name of the Supabase Storage bucket (e.g. "avatarurls", "event_images")
- * @param folder - Optional folder path inside the bucket (e.g. "user_avatars/", "financial_csvs")
- * @param Id - Optional identifier to include in metadata and file path (e.g. user ID, organization ID)
- * @returns The public URL of the uploaded file
- */
 
 export async function uploadFile(
-  file: File,
+  file: File | string,
   bucket: string,
   folder = '',
-  Id?: string
+  Id?: string,
+  isPublic = true
 ): Promise<{
-  publicUrl: string | null;
+  filePath: string | null;
+  url: string | null;
   success: boolean;
   error: string | null;
 }> {
   const supabase = await createClient();
 
   try {
-    // Validate file
-    if (!file || file.size === 0) {
-      return {
-        publicUrl: null,
-        success: false,
-        error: 'File is empty or invalid',
-      };
-    }
-
-    // Get authenticated user to ensure RLS works properly
     const {
       data: { user },
       error: authError,
@@ -41,56 +24,134 @@ export async function uploadFile(
 
     if (authError || !user) {
       return {
-        publicUrl: null,
+        filePath: null,
+        url: null,
         success: false,
-        error: 'User authentication failed. Please log in.',
+        error: 'User authentication failed.',
       };
     }
 
-    const fileExt = file.name.split('.').pop();
+    let uploadData: File | Blob | Uint8Array | undefined;
+    let fileExt = 'bin';
+    let contentType = 'application/octet-stream';
+
+    // HANDLE FILE
+    if (file instanceof File) {
+      if (file.size === 0) {
+        return {
+          filePath: null,
+          url: null,
+          success: false,
+          error: 'File is empty',
+        };
+      }
+
+      uploadData = file;
+      fileExt = file.name.split('.').pop() ?? 'bin';
+      contentType = file.type || contentType;
+    }
+
+    // HANDLE STRING
+    else if (typeof file === 'string') {
+      // BASE64 IMAGE
+      if (file.startsWith('data:')) {
+        const [meta, base64Data] = file.split(',', 2);
+        const mime = meta.match(/:(.*?);/)?.[1];
+
+        contentType = mime ?? contentType;
+        fileExt = mime?.split('/')[1] ?? 'bin';
+
+        uploadData = Uint8Array.from(Buffer.from(base64Data, 'base64'));
+      }
+
+      // URL
+      else if (/^https?:\/\//.test(file)) {
+        const res = await fetch(file);
+
+        if (!res.ok) {
+          return {
+            filePath: null,
+            url: null,
+            success: false,
+            error: 'Failed to fetch file from URL',
+          };
+        }
+
+        const buffer = await res.arrayBuffer();
+
+        uploadData = new Uint8Array(buffer);
+        contentType = res.headers.get('content-type') ?? contentType;
+        fileExt = contentType.split('/')[1] ?? 'bin';
+      } else {
+        return {
+          filePath: null,
+          url: null,
+          success: false,
+          error: 'Unsupported file type',
+        };
+      }
+    }
+
+    if (!uploadData) {
+      return {
+        filePath: null,
+        url: null,
+        success: false,
+        error: 'No valid file data to upload',
+      };
+    }
+
     const fileName = `${Date.now()}-${Math.random()
       .toString(36)
       .substring(2, 8)}.${fileExt}`;
 
-    // Build file path with user ID for RLS compliance
     const filePath = folder
       ? `${folder}/${fileName}`
       : Id
         ? `id_${Id}/${fileName}`
         : `id_${user.id}/${fileName}`;
 
-    const { error } = await supabase.storage
+    const { error: uploadError } = await supabase.storage
       .from(bucket)
-      .upload(filePath, file, {
+      .upload(filePath, uploadData, {
         upsert: true,
-        contentType: file.type,
+        contentType,
       });
 
-    if (error) {
-      console.error('Upload error:', error);
+    if (uploadError) {
       return {
-        publicUrl: null,
+        filePath: null,
+        url: null,
         success: false,
-        error: error.message || 'Failed to upload file',
+        error: uploadError.message,
       };
     }
 
-    const { data } = supabase.storage.from(bucket).getPublicUrl(filePath);
+    if (isPublic) {
+      const { data } = supabase.storage.from(bucket).getPublicUrl(filePath);
+
+      return {
+        filePath,
+        url: data.publicUrl,
+        success: true,
+        error: null,
+      };
+    }
 
     return {
-      publicUrl: data?.publicUrl || null,
+      filePath,
+      url: null,
       success: true,
       error: null,
     };
   } catch (error) {
-    const errorMessage =
-      error instanceof Error ? error.message : 'Failed to upload file.';
-    console.error('Upload error:', errorMessage);
+    const message = error instanceof Error ? error.message : 'Upload failed';
 
     return {
-      publicUrl: null,
+      filePath: null,
+      url: null,
       success: false,
-      error: errorMessage,
+      error: message,
     };
   }
 }

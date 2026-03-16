@@ -3,7 +3,7 @@
 import { Undo2 } from 'lucide-react';
 import AnimatedWrapper from '@/components/common/AnimatedWrapper';
 import Link from 'next/link';
-import { SideDisplayMedia } from '@/config/constants';
+import { MediaSlider } from '@/data/MediaSlider';
 import {
   Carousel,
   CarouselApi,
@@ -53,13 +53,13 @@ export const SideDisplay = () => {
           className="h-full w-full overflow-hidden rounded-2xl [&>div]:h-full"
         >
           <CarouselContent className="h-full">
-            {SideDisplayMedia.map((slide, idx) => (
+            {MediaSlider.map((slide, idx) => (
               <SlideItem key={idx} {...slide} />
             ))}
           </CarouselContent>
 
           <div className="absolute top-4 right-4 flex h-5! gap-2">
-            {SideDisplayMedia.map((_, idx) => (
+            {MediaSlider.map((_, idx) => (
               <button
                 type="button"
                 key={idx}

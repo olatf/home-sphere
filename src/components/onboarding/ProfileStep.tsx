@@ -1,6 +1,7 @@
 import { UseFormReturn } from 'react-hook-form';
 import { OnboardingValues } from '@/lib/schemas/onboarding';
 import { BrandInput } from '@/components/common/BrandInput';
+import { BrandRadioSelectors } from '@/components/common/BrandRadioSelectors';
 
 export default function ProfileStep({
   form,
@@ -8,21 +9,38 @@ export default function ProfileStep({
   form: UseFormReturn<OnboardingValues>;
 }) {
   return (
-    <div className="grid gap-4 space-y-7">
+    <div className="grid gap-2 space-y-3">
+      <div className="space-y-4">
+        <p className="font-secondary text-base font-semibold">
+          Document Type <span className="text-red-900">*</span>
+        </p>
+        <BrandRadioSelectors<OnboardingValues['idType']>
+          ariaLabel="ID type"
+          value={form.getValues('idType')}
+          options={[
+            { value: 'NIN', label: 'National ID' },
+            { value: 'PASSPORT', label: 'Passport' },
+            { value: 'DRIVERS_LICENSE', label: "Driver's License" },
+          ]}
+          onChange={value => form.setValue('idType', value)}
+        />
+      </div>
+
+      <BrandInput
+        formRef={form}
+        name="idNumber"
+        label="Identification Number"
+        placeholder="Enter your ID number"
+        required
+      />
+
       <BrandInput
         formRef={form}
         name="meansOfIdentification"
-        label="Means of Identification"
+        label="ID Document"
         variant="file"
-        maxFileSizeMB={10}
-        required
-      />
-      <BrandInput
-        formRef={form}
-        name="consent"
-        label="Consent to data processing"
-        placeholder="I consent to my data been checked and proceed"
-        variant="checkbox"
+        maxFileSizeMB={5}
+        placeholder="Upload clear image of your ID"
         required
       />
     </div>

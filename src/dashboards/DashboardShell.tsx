@@ -1,28 +1,52 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { DashboardNavbar, AdminNavbar } from '@/navigations';
+import { useState } from 'react';
+import { DashboardNavbar, AdminNavbar, SummaryHeader } from '@/navigations';
+import { DashboardVerificationWidget } from './DashboardVerificationWidget';
 import { usePathname } from 'next/navigation';
 
-const isEventPageRoute = (pathname: string | null) =>
-  !!pathname &&
-  (pathname.startsWith('/dashboard/events/create') ||
-    /^\/dashboard\/events\/[^/]+\/edit$/.test(pathname) ||
-    pathname.startsWith('/admin/events/create') ||
-    /^\/admin\/events\/[^/]+\/edit$/.test(pathname));
-
-export function DashboardShell({ children }: { children: ReactNode }) {
+export function DashboardShell({
+  children,
+  userRole,
+}: {
+  children: ReactNode;
+  userRole?: 'tenant' | 'landlord';
+}) {
   const pathname = usePathname();
-  const isEventPage = isEventPageRoute(pathname);
   const isAdmin = pathname?.startsWith('/admin');
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  const handleRefresh = () => {
+    setRefreshKey(prev => prev + 1);
+  };
 
   return (
-    <main>
-      {!isEventPage && (isAdmin ? <AdminNavbar /> : <DashboardNavbar />)}
-      <div className="h-full px-4 sm:px-6 md:px-10 xl:px-0">{children}</div>
-      {/* <div className="bg-brand-primary h-16 p-5 fixed bottom-3 right-3 rounded-xl">
-       <p className="text-white font-medium">Back to Table4Thirteen Website</p>
-      </div> */}
-    </main>
+    <div className="flex h-screen flex-col overflow-hidden md:flex-row">
+      {/* Sidebar */}
+      <aside className="bg-background border-r py-3 md:w-64 md:shrink-0 md:py-0">
+        {isAdmin ? <AdminNavbar /> : <DashboardNavbar userRole={userRole} />}
+      </aside>
+
+      <div className="relative flex flex-col overflow-hidden md:flex-1">
+        {/* Summary Header */}
+        <div className="flex h-15 items-center border-b px-3 md:h-20 md:shrink-0 md:px-6">
+          <SummaryHeader />
+          {!isAdmin && (
+            <div
+              key={refreshKey}
+              className="absolute top-5 right-0 px-3 py-2 md:px-6"
+            >
+              <DashboardVerificationWidget onRefresh={handleRefresh} />
+            </div>
+          )}
+        </div>
+
+        {/* Content */}
+        <div className="no-scrollbar flex-1 overflow-y-auto py-2">
+          {children}
+        </div>
+      </div>
+    </div>
   );
 }

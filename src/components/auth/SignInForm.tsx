@@ -66,7 +66,7 @@ export const SignInForm = () => {
               <Undo2 className="mr-2 size-4" />
               HomeSphere
             </Link>
-            <h1 className="font-secondary mt-10 mb-1 text-center text-3xl font-bold">
+            <h1 className="font-secondary mt-15 mb-1 text-center text-3xl font-bold md:mt-0">
               Welcome Back to HomeSphere!
             </h1>
           </div>

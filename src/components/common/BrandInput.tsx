@@ -30,6 +30,7 @@ export type InputVariant =
   | 'textarea'
   | 'phone'
   | 'country'
+  | 'select'
   | 'state'
   | 'date'
   | 'checkbox'
@@ -45,6 +46,7 @@ interface BrandInputProps<T extends FieldValues> extends React.ComponentProps<
   type?: React.HTMLInputTypeAttribute;
   formRef: UseFormReturn<T>;
   required?: boolean;
+  options?: { value: string; label: string }[];
   maxFileSizeMB?: number;
 }
 
@@ -55,6 +57,7 @@ export function BrandInput<T extends FieldValues>({
   variant = 'input',
   type = 'text',
   formRef,
+  options,
   required,
   maxFileSizeMB = 5,
 }: BrandInputProps<T>) {
@@ -158,6 +161,24 @@ export function BrandInput<T extends FieldValues>({
                     </Select>
                   );
 
+                case 'select':
+                  if (!options || options.length === 0) return null;
+                  return (
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger className={cn(`px-7`, baseClass)}>
+                        <SelectValue placeholder={placeholder} />
+                      </SelectTrigger>
+
+                      <SelectContent>
+                        {options?.map(option => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  );
+
                 case 'date':
                   return (
                     <div className="text-brand w-[35%]">
@@ -175,6 +196,7 @@ export function BrandInput<T extends FieldValues>({
                     <div className="space-y-2">
                       <BrandImageEditor
                         control={formRef.control}
+                        accept_types="JPG, WEBP"
                         name={name}
                         existingImageUrl={
                           typeof field.value === 'string'

@@ -13,7 +13,8 @@ export default function RoleStep({
       <p className="font-secondary text-base font-semibold">
         What is your role?
       </p>
-      <BrandRadioSelectors
+      <BrandRadioSelectors<OnboardingValues['role']>
+        ariaLabel="Role category"
         value={form.getValues('role')}
         onChange={value => form.setValue('role', value)}
       />

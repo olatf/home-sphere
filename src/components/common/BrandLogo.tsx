@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 
 export const BrandLogo = ({ isScrolled }: { isScrolled?: boolean }) => {
   return (
-    <Link href="/" className="flex items-center">
+    <Link href="/" className="mx-0 flex items-center md:mx-6">
       <House
         className={isScrolled ? 'text-brand size-8' : 'size-8 text-white'}
       />

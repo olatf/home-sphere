@@ -1,12 +1,11 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, UseFormReturn } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { onboardingSchema, OnboardingValues } from '@/lib/schemas/onboarding';
-
 import { Card } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
+import { cn } from '@/lib/utils';
 import { Form } from '@/components/ui/form';
 import { completeOnboarding } from '@/actions/auth';
 import { BrandButton } from '@/components/common/BrandButton';
@@ -15,13 +14,20 @@ import { If } from '@/components/common/If';
 import RoleStep from './RoleStep';
 import PersonalStep from './PersonalStep';
 import ProfileStep from './ProfileStep';
+import KycCapture from './KycCapture';
 import { toast } from 'sonner';
 import AnimatedWrapper from '@/components/common/AnimatedWrapper';
 import { getErrorMessage } from '@/helpers/error.helpers';
 import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 
-const steps = ['Role', 'Personal', 'Profile'] as const;
+type Steps = {
+  title: string;
+  fields: (keyof OnboardingValues)[];
+  component: React.FC<{
+    form: UseFormReturn<OnboardingValues>;
+  }>;
+};
 
 export const OnboardingForm = () => {
   const [step, setStep] = useState(0);
@@ -34,25 +40,43 @@ export const OnboardingForm = () => {
       role: undefined,
       phone: '',
       bio: '',
-      interests: '',
+      interest: [],
       nationality: '',
       city: '',
       dateOfBirth: undefined,
+      idType: undefined,
+      idNumber: '',
       meansOfIdentification: undefined,
+      selfieImage: undefined,
       consent: false,
     },
     mode: 'onTouched',
     shouldUnregister: false,
   });
 
-  const stepFields: Record<number, (keyof OnboardingValues)[]> = {
-    0: ['role', 'phone', 'nationality', 'city'],
-    1: ['dateOfBirth', 'bio', 'interests'],
-    2: ['meansOfIdentification', 'consent'],
-  };
+  const steps: Steps[] = [
+    {
+      title: 'Role',
+      fields: ['role', 'phone', 'nationality', 'city'],
+      component: RoleStep,
+    },
+    {
+      title: 'Personal',
+      fields: ['dateOfBirth', 'bio', 'interest'],
+      component: PersonalStep,
+    },
+    {
+      title: 'Profile',
+      fields: ['idType', 'idNumber', 'meansOfIdentification'],
+      component: ProfileStep,
+    },
+    { title: 'KYC', fields: ['selfieImage', 'consent'], component: KycCapture },
+  ];
+
+  const isLastStep = step === steps.length - 1;
 
   const next = async () => {
-    const fields = stepFields[step];
+    const fields = steps[step].fields;
 
     const valid = await form.trigger(fields, {
       shouldFocus: true,
@@ -81,67 +105,86 @@ export const OnboardingForm = () => {
     });
   };
 
+  const handleNext = isLastStep ? form.handleSubmit(onSubmit) : next;
+
+  const buttonText = isLastStep ? (
+    onboarding ? (
+      <div className="flex items-center gap-3">
+        <Loader2 className="size-4 animate-spin" />
+        Loading...
+      </div>
+    ) : (
+      'Finish'
+    )
+  ) : step === 0 ? (
+    'Continue'
+  ) : (
+    'Next'
+  );
+
+  const CurrentStep = steps[step].component;
+
   return (
     <AnimatedWrapper type="slideInRight">
-      <Card className="h-[90%] w-full max-w-xl border-none px-6 py-2 shadow-none">
-        <Progress value={((step + 1) / steps.length) * 100} className="" />
-
-        <h1 className="font-primary mt-4 text-center text-2xl font-bold">
-          {' '}
-          Complete your Onboarding
-        </h1>
-        <p className="text-muted-foreground text-sm">
-          Step {step + 1} of {steps.length}
-        </p>
-
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="mt-2 space-y-6"
+      <Card className="flex max-h-[85vh] w-full max-w-xl flex-col overflow-hidden border-none px-6 py-2 shadow-none">
+        <div className="shrink-0">
+          <div
+            className={`grid gap-2`}
+            style={{
+              gridTemplateColumns: `repeat(${steps.length}, 1fr)`,
+            }}
           >
-            <If cond={step === 0}>
-              <RoleStep form={form} />
-            </If>
-            <If cond={step === 1}>
-              <PersonalStep form={form} />
-            </If>
-            <If cond={step === 2}>
-              <ProfileStep form={form} />
-            </If>
-
-            <div className="mt-10 flex justify-between">
-              <If cond={step > 0}>
-                <BrandButton
-                  type="button"
-                  brandVariant="tertiary"
-                  onClick={back}
-                >
-                  Back
-                </BrandButton>
-              </If>
-              {step < steps.length - 1 ? (
-                <BrandButton
-                  type="button"
-                  brandVariant="tertiary"
-                  onClick={next}
-                >
-                  Continue
-                </BrandButton>
-              ) : (
-                <BrandButton type="submit" className="min-h-10 px-7 py-4">
-                  {onboarding ? (
-                    <div className="flex items-center gap-3">
-                      <Loader2 className="size-4 animate-spin" />
-                      Loading...
-                    </div>
-                  ) : (
-                    'Finish'
+            {Array.from({ length: steps.length }, (_, index) => {
+              const key = `step-${index}`;
+              return (
+                <div
+                  key={key}
+                  className={cn(
+                    'h-2 rounded-[2px] bg-zinc-200',
+                    index <= step && 'bg-brand'
                   )}
-                </BrandButton>
-              )}
-            </div>
-          </form>
-        </Form>
+                />
+              );
+            })}
+          </div>
+
+          <h1 className="font-primary mt-7 text-center text-2xl font-bold">
+            Complete your Onboarding
+          </h1>
+
+          <p className="text-muted-foreground mt-5 text-sm">
+            Step {step + 1} of {steps.length}
+          </p>
+        </div>
+
+        <div className="no-scrollbar flex-1 overflow-y-auto pr-2">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <CurrentStep form={form} />
+
+              <footer className="fixed bottom-7 w-full max-w-xl border-t">
+                <div className="mt-4 flex justify-between">
+                  <If cond={step > 0}>
+                    <BrandButton
+                      type="button"
+                      brandVariant="tertiary"
+                      onClick={back}
+                    >
+                      Back
+                    </BrandButton>
+                  </If>
+                  <BrandButton
+                    type={isLastStep ? 'submit' : 'button'}
+                    brandVariant="tertiary"
+                    onClick={handleNext}
+                  >
+                    {buttonText}
+                  </BrandButton>
+                </div>
+              </footer>
+            </form>
+          </Form>
+        </div>
       </Card>
     </AnimatedWrapper>
   );

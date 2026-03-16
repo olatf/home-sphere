@@ -9,8 +9,7 @@ import { Loader2 } from 'lucide-react';
 export const NewsletterSection = () => {
   const [formData, setFormData] = useState({
     email: '',
-    firstName: '',
-    lastName: '',
+    fullName: '',
     phone: '',
   });
 
@@ -44,8 +43,7 @@ export const NewsletterSection = () => {
 
           // reset form
           setFormData({
-            firstName: '',
-            lastName: '',
+            fullName: '',
             email: '',
             phone: '',
           });
@@ -74,16 +72,7 @@ export const NewsletterSection = () => {
               name="firstName"
               placeholder="First Name"
               className="w-full rounded-sm border-b border-white p-3 text-white focus:outline-none"
-              value={formData.firstName}
-              onChange={handleChange}
-            />
-            <input
-              type="text"
-              required
-              name="lastName"
-              placeholder="Last Name"
-              className="w-full rounded-sm border-b border-white p-3 text-white focus:outline-none"
-              value={formData.lastName}
+              value={formData.fullName}
               onChange={handleChange}
             />
             <input
