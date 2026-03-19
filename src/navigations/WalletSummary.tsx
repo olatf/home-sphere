@@ -1,7 +1,13 @@
+'use client';
+
 import { Wallet } from 'lucide-react';
 import Link from 'next/link';
+import { useUserWallet } from '@/hooks/useWallet';
+import { formatCurrency } from '@/helpers/currency.helpers';
 
 export const WalletSummary = () => {
+  const { wallet, isLoading } = useUserWallet();
+
   return (
     <div>
       <Link
@@ -10,7 +16,7 @@ export const WalletSummary = () => {
       >
         <Wallet className="size-5 text-zinc-900" />
         <span className="font-secondary text-sm font-normal text-zinc-900 md:text-base">
-          &#8358;10,000
+          {!isLoading ? formatCurrency(wallet.balance) : '0.00'}
         </span>
       </Link>
     </div>
