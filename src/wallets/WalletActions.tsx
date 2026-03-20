@@ -79,7 +79,7 @@ export const WalletActions = () => {
   return (
     <>
       <AnimatedWrapper type="slideInUp">
-        <div className="m-7 grid grid-cols-2 gap-4 md:grid-cols-4">
+        <div className="mx-3 mt-5 grid grid-cols-2 gap-4 md:mx-7 md:mt-7 md:grid-cols-4">
           {actions.map(a => {
             const Icon = a.icon;
             return (

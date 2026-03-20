@@ -63,9 +63,11 @@ export const ProfileTracker = ({ isScrolled }: { isScrolled?: boolean }) => {
             sideOffset={5}
             className="font-secondary min-w-[320px] rounded-lg border bg-white p-1 shadow-lg"
           >
-            <DropdownMenuItem className="text-md cursor-pointer">
-              <Link href="/account">My Account</Link>
-            </DropdownMenuItem>
+            <Link href="/account">
+              <DropdownMenuItem className="text-md cursor-pointer">
+                My Account
+              </DropdownMenuItem>
+            </Link>
             <DropdownMenuItem
               onClick={handleLogout}
               className="text-md cursor-pointer"
@@ -121,10 +123,11 @@ export const ProfileTracker = ({ isScrolled }: { isScrolled?: boolean }) => {
                 </p>
               </If>
             </div>
-
-            <DropdownMenuItem className="cursor-pointer text-sm">
-              <Link href="/dashboard">My Account</Link>
-            </DropdownMenuItem>
+            <Link href="/dashboard">
+              <DropdownMenuItem className="cursor-pointer text-sm">
+                My Account
+              </DropdownMenuItem>
+            </Link>
 
             <DropdownMenuItem
               onClick={handleLogout}

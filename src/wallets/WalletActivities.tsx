@@ -15,6 +15,7 @@ import { useUserWallet } from '@/hooks/useWallet';
 import { useInvalidateWallet } from '@/hooks/Useinvalidatewallet';
 import { formatCurrency } from '@/helpers/currency.helpers';
 import AnimatedWrapper from '@/components/common/AnimatedWrapper';
+import { Badge } from '@/components/ui/badge';
 import { PAGE_SIZE } from '@/config/constants';
 import { Pagination } from '@/components/common/Pagination';
 import { cn } from '@/lib/utils';
@@ -68,14 +69,15 @@ function TransactionIcon({ type }: { type: string }) {
 
 function TransactionItem({ tx }: { tx: WalletTransaction }) {
   const isCredit = tx.type === 'credit' || tx.transaction_type === 'deposit';
+  const isPending = tx.status === 'pending';
   const statusCfg = STATUS_CONFIG[tx.status] ?? STATUS_CONFIG.pending;
 
   return (
-    <div className="flex items-center gap-3 rounded-xl px-4 py-3 transition hover:bg-gray-50">
+    <div className="flex items-center gap-2 rounded-xl px-2 py-3 transition hover:bg-gray-50 md:gap-3 md:px-4">
       <TransactionIcon type={tx.type} />
 
       <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 md:gap-2">
           <p className="truncate text-sm font-medium text-gray-800">
             {tx.description ||
               TYPE_LABELS[tx.transaction_type] ||
@@ -87,7 +89,7 @@ function TransactionItem({ tx }: { tx: WalletTransaction }) {
             {statusCfg.label}
           </span>
         </div>
-        <div className="mt-0.5 flex items-center gap-2 text-xs text-gray-400">
+        <div className="mt-0.5 flex items-center gap-1 text-xs text-gray-400 md:gap-2">
           <span>{TYPE_LABELS[tx.transaction_type] ?? tx.transaction_type}</span>
           <span>·</span>
           <span>
@@ -99,7 +101,8 @@ function TransactionItem({ tx }: { tx: WalletTransaction }) {
       <p
         className={cn(
           'shrink-0 text-sm font-semibold',
-          isCredit ? 'text-emerald-600' : 'text-rose-500'
+          isCredit ? 'text-emerald-600' : 'text-rose-500',
+          isPending && 'text-amber-600'
         )}
       >
         {isCredit ? '+' : '-'} {formatCurrency(Number(tx.amount))}
@@ -124,8 +127,6 @@ function TransactionSkeleton() {
     </div>
   );
 }
-
-// ─── Main component ───────────────────────────────────────────────────────────
 
 export const WalletActivities = () => {
   const { transactions, isLoading } = useUserWallet();
@@ -179,18 +180,17 @@ export const WalletActivities = () => {
 
   return (
     <AnimatedWrapper type="slideInUp">
-      <div className="mx-7 my-10 rounded-2xl border bg-white">
-        {/* Header */}
-        <div className="flex items-center justify-between border-b px-5 py-4">
+      <div className="mx-3 my-5 rounded-2xl border bg-white md:mx-7 md:my-10">
+        <div className="flex items-center justify-between border-b px-2 py-2 md:px-5 md:py-4">
           <div className="flex items-center gap-2">
-            <Receipt className="h-4 w-4 text-gray-400" />
+            <Receipt className="size-4 text-gray-400" />
             <h3 className="text-sm font-semibold text-gray-800">
               Transactions
             </h3>
             {transactions.length > 0 && (
-              <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-500">
+              <Badge className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-500">
                 {transactions.length}
-              </span>
+              </Badge>
             )}
           </div>
           <button
@@ -204,13 +204,13 @@ export const WalletActivities = () => {
         </div>
 
         {/* Filter tabs */}
-        <div className="scrollbar-none flex items-center gap-1 overflow-x-auto border-b px-5 py-2">
-          <Filter className="mr-1 h-3.5 w-3.5 shrink-0 text-gray-300" />
+        <div className="scrollbar-none flex items-center gap-1 overflow-x-auto border-b px-3 py-2 md:px-5">
+          <Filter className="mr-1 size-3.5 shrink-0 text-gray-300" />
           {filterTabs.map(f => (
             <button
               key={f}
               onClick={() => handleFilterChange(f)}
-              className={`shrink-0 rounded-lg px-3 py-1 text-xs font-medium capitalize transition ${
+              className={`shrink-0 rounded-lg px-2 py-1 text-xs font-medium capitalize transition md:px-3 ${
                 filter === f
                   ? 'bg-emerald-100 text-emerald-700'
                   : 'text-gray-500 hover:text-gray-700'
@@ -224,7 +224,7 @@ export const WalletActivities = () => {
         {/* Transaction list */}
         <div className="divide-y divide-gray-50 px-1">
           {paginated.length === 0 ? (
-            <div className="flex flex-col items-center gap-2 py-14 text-center">
+            <div className="flex flex-col items-center gap-2 py-8 text-center md:py-14">
               {filter === 'All' ? (
                 <>
                   <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-50">
@@ -251,10 +251,9 @@ export const WalletActivities = () => {
           )}
         </div>
 
-        {/* Footer: pagination + pending notice */}
+        {/* Pagination */}
         {(totalPages > 1 || transactions.some(t => t.status === 'pending')) && (
           <div className="space-y-3 border-t px-5 py-4">
-            {/* Page info + pagination */}
             {totalPages > 1 && (
               <div className="flex flex-col gap-3">
                 <div className="flex items-center justify-between text-xs text-gray-400">

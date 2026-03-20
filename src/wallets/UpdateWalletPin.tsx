@@ -89,12 +89,14 @@ export const UpdateWalletPin = ({
   const otpSlotClass = `
     min-h-11 min-w-11
     rounded-[10px]
-    border border-[#D0D5DD]
+    border border-brand
+    ring-0
     text-base font-medium text-[#535A63]
-    has-[input:focus-visible]:border-emerald-600
-    has-[input:focus-visible]:ring-1
-    has-[input:focus-visible]:ring-emerald-600
+    has-[input:focus-visible]:bg-brand-light/30
+    has-[input:focus-visible]:border-brand
     transition-colors
+    text-brand-light
+    bg-gray-50  focus:bg-white
   `;
 
   return (
@@ -147,7 +149,7 @@ export const UpdateWalletPin = ({
             <BrandButton
               onClick={handleContinue}
               disabled={isUpdating || activePin.length !== 4}
-              className="flex-1 bg-emerald-600 text-white"
+              className="bg-brand hover:brand-dark/80 w-full text-white"
             >
               {isUpdating ? (
                 <>

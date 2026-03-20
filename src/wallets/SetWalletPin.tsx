@@ -64,8 +64,6 @@ export const SetWalletPin = ({
     text-base font-medium text-[#535A63]
     has-[input:focus-visible]:bg-brand-light/30
     has-[input:focus-visible]:border-brand
-    // has-[input:focus-visible]:ring-1
-    // has-[input:focus-visible]:ring-brand
     transition-colors
     text-brand-light
     bg-gray-50  focus:bg-white

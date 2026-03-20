@@ -100,16 +100,16 @@ function StatPill({
   trend: 'up' | 'down';
 }) {
   return (
-    <div className="font-secondary flex flex-col gap-0.5 rounded-xl bg-gray-50 px-4 py-3">
+    <div className="font-secondary flex flex-col gap-0.5 rounded-xl bg-gray-50 px-2 py-3 md:px-4">
       <p className="text-xs text-gray-400">{label}</p>
       <p className="text-sm font-bold text-gray-800">{formatCurrency(value)}</p>
       <div
         className={`flex items-center gap-1 text-xs font-medium ${trend === 'up' ? 'text-emerald-600' : 'text-rose-500'}`}
       >
         {trend === 'up' ? (
-          <TrendingUp className="h-3 w-3" />
+          <TrendingUp className="size-3" />
         ) : (
-          <TrendingDown className="h-3 w-3" />
+          <TrendingDown className="size-3" />
         )}
         {trend === 'up' ? 'Money in' : 'Money out'}
       </div>
@@ -142,7 +142,7 @@ function PieLegend({
           className={`flex items-center gap-1.5 rounded-lg px-2 py-1 transition ${activeIndex === index ? 'bg-gray-100' : ''}`}
         >
           <span
-            className="h-2.5 w-2.5 shrink-0 rounded-full"
+            className="size-3.5 shrink-0 rounded-full"
             style={{ background: entry.color }}
           />
           <span className="text-xs text-gray-500">{entry.name}</span>
@@ -166,21 +166,54 @@ function PieCenterLabel({
 }) {
   if (!entry) return null;
   return (
-    <g>
-      <text
-        x={cx}
-        y={cy - 10}
-        textAnchor="middle"
-        fill="#374151"
-        fontSize={13}
-        fontWeight={600}
-      >
-        {entry.name}
-      </text>
-      <text x={cx} y={cy + 10} textAnchor="middle" fill="#6b7280" fontSize={11}>
-        {formatCurrency(entry.value)}
-      </text>
-    </g>
+    <>
+      <div className="hidden md:block">
+        <g>
+          <text
+            x={cx}
+            y={cy - 10}
+            textAnchor="middle"
+            fill="#374151"
+            fontSize={13}
+            fontWeight={600}
+          >
+            {entry.name}
+          </text>
+          <text
+            x={cx}
+            y={cy + 10}
+            textAnchor="middle"
+            fill="#6b7280"
+            fontSize={11}
+          >
+            {formatCurrency(entry.value)}
+          </text>
+        </g>
+      </div>
+      <div className="md:hidden">
+        <g>
+          <text
+            x={cx}
+            y={cy - 10}
+            textAnchor="middle"
+            fill="#374151"
+            fontSize={13}
+            fontWeight={600}
+          >
+            {entry.name}
+          </text>
+          <text
+            x={cx}
+            y={cy + 4}
+            textAnchor="middle"
+            fill="#6b7280"
+            fontSize={11}
+          >
+            {formatCurrency(entry.value)}
+          </text>
+        </g>
+      </div>
+    </>
   );
 }
 
@@ -213,7 +246,7 @@ export function SummaryChart() {
 
   return (
     <AnimatedWrapper type="slideInUp">
-      <div className="mx-7 mt-3 rounded-2xl border bg-white p-6 shadow-sm">
+      <div className="mx-2 mt-3 rounded-2xl border bg-white p-3 shadow-sm md:mx-7 md:p-6">
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
           <div>
             <h3 className="font-semibold text-gray-900">
@@ -223,7 +256,7 @@ export function SummaryChart() {
               Last {months} months of activity
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex w-full items-center justify-between gap-2 md:w-auto md:justify-items-start">
             <div className="flex overflow-hidden rounded-lg border border-gray-100">
               {([3, 6, 12] as MonthRange[]).map(m => (
                 <button
@@ -235,7 +268,7 @@ export function SummaryChart() {
                 </button>
               ))}
             </div>
-            <div className="flex overflow-hidden rounded-lg border border-gray-100">
+            <div className="flex justify-end overflow-hidden rounded-lg border border-gray-100 md:justify-items-start">
               <button
                 onClick={() => setView('bar')}
                 className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition ${view === 'bar' ? 'bg-brand text-white' : 'text-gray-500 hover:bg-gray-50'}`}

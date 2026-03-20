@@ -32,13 +32,13 @@ export const WalletBalanceCard = () => {
   return (
     <>
       <AnimatedWrapper type="slideInUp">
-        <div className="font-secondary from-brand via-brand-light to-brand-dark relative mx-6 mt-6 overflow-hidden rounded-3xl bg-linear-to-br p-6 text-white shadow-xl">
+        <div className="font-secondary from-brand via-brand-light to-brand-dark relative mx-2 mt-6 overflow-hidden rounded-3xl bg-linear-to-br p-3 text-white shadow-xl md:mx-6 md:p-6">
           <div className="flex items-start justify-between">
             <div>
               <p className="text-sm opacity-80">Wallet Balance</p>
 
               <div className="mt-2 flex items-center gap-3">
-                <h1 className="text-4xl font-bold tracking-tight">
+                <h1 className="text-3xl font-bold tracking-tight md:text-4xl">
                   {showBal ? (
                     <>
                       <span className="mr-1">₦</span>
@@ -66,7 +66,7 @@ export const WalletBalanceCard = () => {
               </div>
             </div>
 
-            <div className="flex flex-col items-end gap-1">
+            <div className="hidden flex-col items-end gap-1 md:flex">
               <p className="text-xs opacity-70">Wallet ID</p>
               <div className="flex items-center gap-2 rounded-lg bg-white/20 px-3 py-2 text-sm font-semibold backdrop-blur">
                 {wallet.wallet_id}
@@ -105,7 +105,21 @@ export const WalletBalanceCard = () => {
             </div>
           </div>
 
-          <div className="mt-6 flex justify-end">
+          <div className="mt-6 flex items-center justify-between md:justify-end">
+            <div className="flex flex-col items-start gap-1 md:hidden">
+              <p className="text-xs opacity-70">Wallet ID</p>
+              <div className="flex items-center gap-2 rounded-lg bg-white/20 px-3 py-2 text-sm font-semibold backdrop-blur">
+                {wallet.wallet_id}
+                {copied ? (
+                  <Check className="h-4 w-4 cursor-pointer opacity-70 hover:opacity-100" />
+                ) : (
+                  <Copy
+                    className="h-4 w-4 cursor-pointer opacity-70 hover:opacity-100"
+                    onClick={() => copyToClipboard(wallet.wallet_id)}
+                  />
+                )}
+              </div>
+            </div>
             {hasPin ? (
               <BrandButton
                 brandVariant="tertiary"
