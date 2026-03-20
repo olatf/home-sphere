@@ -45,7 +45,7 @@ export const VerificationBanner = ({
     <motion.div
       initial={{ y: -20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      className={`relative mb-4 flex max-w-sm flex-col items-center justify-between rounded-xl ${colors.bg} ${colors.border} space-y-3 border px-2 py-3`}
+      className={`relative z-9999 mb-4 flex max-w-sm flex-col items-center justify-between rounded-xl ${colors.bg} ${colors.border} space-y-3 border px-2 py-3`}
     >
       {title && (
         <h3 className={`text-sm font-semibold ${colors.text}`}>{title}</h3>

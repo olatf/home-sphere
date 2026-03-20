@@ -14,6 +14,8 @@ export default function KycCapture({
 }: {
   form: UseFormReturn<OnboardingValues>;
 }) {
+  const [cameraReady, setCameraReady] = useState(false);
+  const [cameraError, setCameraError] = useState(false);
   const webcamRef = useRef<Webcam>(null);
   const [selfie, setSelfie] = useState<string | null>(null);
   const captureSelfie = () => {
@@ -33,11 +35,31 @@ export default function KycCapture({
       <div>
         {!selfie ? (
           <div className="flex flex-col items-start gap-2">
-            <Webcam
-              ref={webcamRef}
-              screenshotFormat="image/jpeg"
-              className="object-fit h-[300] w-[400] rounded-xl"
-            />
+            <div className="relative h-[300] w-[400]">
+              <Webcam
+                ref={webcamRef}
+                screenshotFormat="image/jpeg"
+                onUserMedia={() => setCameraReady(true)}
+                onUserMediaError={() => setCameraError(true)}
+                className="h-full w-full rounded-xl object-cover"
+              />
+
+              {!cameraReady && !cameraError && (
+                <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-gray-200">
+                  <p className="text-sm text-gray-600">
+                    Requesting camera access...
+                  </p>
+                </div>
+              )}
+
+              {cameraError && (
+                <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-red-100">
+                  <p className="text-sm text-red-500">
+                    Camera access denied. Please allow permission.
+                  </p>
+                </div>
+              )}
+            </div>
 
             <BrandButton
               type="button"

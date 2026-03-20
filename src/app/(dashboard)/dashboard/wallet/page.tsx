@@ -1,3 +1,17 @@
+import {
+  WalletBalanceCard,
+  SummaryChart,
+  WalletActions,
+  WalletActivities,
+} from '@/wallets';
+
 export default function WalletPage() {
-  return <div>This is the wallet page</div>;
+  return (
+    <>
+      <WalletBalanceCard />
+      <WalletActions />
+      <SummaryChart />
+      <WalletActivities />
+    </>
+  );
 }

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import {
   type DashboardRoute,
   LandlordRoutes,
+  TenantRoutes,
   CommonRoutes,
 } from '@/config/dashboardRoutes';
 import Link from 'next/link';
@@ -103,7 +104,9 @@ export const DashboardNavbar = ({
         </div>
 
         <nav className="flex flex-col gap-2">
-          {userRole?.includes('landlord') && LandlordRoutes.map(renderRoute)}
+          {userRole?.includes('landlord')
+            ? LandlordRoutes.map(renderRoute)
+            : TenantRoutes.map(renderRoute)}
           {CommonRoutes.map(renderRoute)}
         </nav>
 

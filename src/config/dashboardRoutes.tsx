@@ -5,6 +5,7 @@ import {
   ListChecks,
   Wallet,
   FileText,
+  Heart,
   MessageSquareMore as Messages,
   UserCog,
 } from 'lucide-react';
@@ -29,6 +30,30 @@ export const LandlordRoutes: DashboardRoute[] = [
     path: '/dashboard/tenants',
     label: 'Tenants',
     icon: <Handshake size={20} />,
+  },
+  {
+    path: '/dashboard/tasks',
+    label: 'Tasks',
+    icon: <ListChecks size={20} />,
+  },
+];
+
+export const TenantRoutes: DashboardRoute[] = [
+  {
+    path: '/dashboard',
+    label: 'Overview',
+    icon: <Telescope size={20} />,
+  },
+
+  {
+    path: '/dashboard/rent',
+    label: 'My Rents',
+    icon: <Landmark size={20} />,
+  },
+  {
+    path: '/dashboard/wishlists',
+    label: 'Wishlists',
+    icon: <Heart size={20} />,
   },
   {
     path: '/dashboard/tasks',
