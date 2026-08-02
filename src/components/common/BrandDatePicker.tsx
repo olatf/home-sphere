@@ -1,8 +1,10 @@
 'use client';
 
 import { format } from 'date-fns';
-import { Calendar } from '@/components/ui/calendar';
 import { CalendarIcon } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { Calendar } from '@/components/ui/calendar';
+import { Input } from '@/components/ui/input';
 import {
   Popover,
   PopoverContent,
@@ -15,8 +17,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useState, useMemo } from 'react';
-import { Input } from '@/components/ui/input';
 import { If } from './If';
 
 interface DateTimePickerProps {
@@ -44,12 +44,16 @@ export function DateTimePicker({
   const currentYear = today.getFullYear();
 
   // If minAge exists, override max selectable year
+
   const maxYear = useMemo(() => {
+    const now = new Date();
+    const currentYear = now.getFullYear();
+
     if (minAge) {
       return currentYear - minAge;
     }
-    return toYear ?? currentYear + 10;
-  }, [minAge, toYear, currentYear]);
+    return toYear ?? currentYear;
+  }, [minAge, toYear]);
 
   // Ensure valid year range
   const safeFromYear = Math.min(fromYear, maxYear);
@@ -71,7 +75,19 @@ export function DateTimePicker({
 
   //Month state syncs with selected value
 
-  const [month, setMonth] = useState<Date>(value ?? new Date(fromYear, 0, 1));
+  const [month, setMonth] = useState<Date>(() => {
+    if (value) return value;
+
+    // If today is actually within our allowed range (1950 to maxYear), show today.
+    // Otherwise, fallback to the closest valid limit.
+    if (currentYear >= fromYear && currentYear <= maxYear) {
+      return today;
+    }
+
+    return currentYear < fromYear
+      ? new Date(fromYear, 0, 1)
+      : new Date(maxYear, 0, 1);
+  });
 
   // Disabled date logic
   const disabledDates = (date: Date) => {
@@ -135,7 +151,7 @@ export function DateTimePicker({
           </div>
         </PopoverTrigger>
 
-        <PopoverContent className="border-brand-primary w-auto p-0">
+        <PopoverContent className="w-auto border-brand-primary p-0">
           <div className="flex flex-col space-y-3 p-3">
             <div className="flex gap-2">
               <Select

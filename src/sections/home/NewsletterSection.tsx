@@ -1,115 +1,72 @@
 'use client';
 
-import { useState, useCallback, useTransition } from 'react';
-import { BrandButton } from '@/components/common/BrandButton';
+import { Loader2, Mail } from 'lucide-react';
+import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
+import { subscribeToNewsletter } from '@/actions/newsletter';
+import { BrandButton } from '@/components/common/BrandButton';
+import { BrandInput, type FormValue } from '@/components/common/BrandInput';
 import { getErrorMessage } from '@/helpers/error.helpers';
-import { Loader2 } from 'lucide-react';
 
 export const NewsletterSection = () => {
-  const [formData, setFormData] = useState({
-    email: '',
-    fullName: '',
-    phone: '',
-  });
+  const [email, setEmail] = useState('');
+  const [isPending, startTransition] = useTransition();
 
-  const [subscribing, startTransition] = useTransition();
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    startTransition(async () => {
+      try {
+        const result = await subscribeToNewsletter(email);
+        if (!result.success) throw new Error(result.error ?? undefined);
+
+        toast.success("You're subscribed! Watch your inbox for updates.");
+        setEmail('');
+      } catch (err) {
+        toast.error(getErrorMessage(err));
+      }
+    });
   };
 
-  const handleSubmit = useCallback(
-    (e: React.FormEvent<HTMLFormElement>) => {
-      e.preventDefault();
-
-      startTransition(async () => {
-        try {
-          const res = await fetch('/api/newsletter', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(formData),
-          });
-
-          const data = await res.json();
-
-          if (!res.ok) {
-            throw new Error(data.error || 'Subscription failed');
-          }
-
-          toast.success('Successfully subscribed to newsletter!');
-
-          // reset form
-          setFormData({
-            fullName: '',
-            email: '',
-            phone: '',
-          });
-        } catch (err) {
-          toast.error(getErrorMessage(err));
-        }
-      });
-    },
-    [formData]
-  );
   return (
-    <section className="bg-brand-dark py-20 text-white">
-      <div className="container mx-auto px-6 text-center lg:px-12">
-        <h2 className="mb-6 text-4xl font-bold">Stay Updated</h2>
-
-        <p className="mx-auto mb-8 max-w-xl text-zinc-200">
-          Subscribe to our newsletter and receive property updates and exclusive
-          offers.
+    <section className="bg-brand-primary-dark py-20 text-white">
+      <div className="container mx-auto px-6 text-center">
+        <Mail className="mx-auto mb-5 size-9 text-white/70" />
+        <h2 className="mb-3 font-bold font-primary text-3xl md:text-4xl">
+          Stay in the loop
+        </h2>
+        <p className="mx-auto mb-8 max-w-lg font-secondary text-white/70">
+          Get new listings, rental tips, and market updates delivered to your
+          inbox.
         </p>
 
-        <form onSubmit={handleSubmit} className="mx-auto max-w-5xl">
-          <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <input
-              type="text"
-              required
-              name="firstName"
-              placeholder="First Name"
-              className="w-full rounded-sm border-b border-white p-3 text-white focus:outline-none"
-              value={formData.fullName}
-              onChange={handleChange}
-            />
-            <input
+        <form
+          onSubmit={handleSubmit}
+          className="mx-auto flex max-w-lg flex-col items-center gap-3 sm:flex-row"
+        >
+          <div className="flex-1">
+            <BrandInput
               type="email"
+              name="email"
               required
-              placeholder="Email"
-              className="w-full rounded-sm border-b border-white p-3 text-white focus:outline-none"
-              value={formData.email}
-              onChange={handleChange}
-            />
-            <input
-              type="number"
-              required
-              name="phone"
-              placeholder="Phone No"
-              className="w-full [appearance:textfield] rounded-sm border-b border-white p-3 text-white focus:outline-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-              value={formData.phone}
-              onChange={handleChange}
+              placeholder="Enter your email"
+              value={email}
+              onChange={(val: FormValue) => setEmail(val as string)}
+              disabled={isPending}
+              leftElement={<Mail className="size-4 text-white/70" />}
             />
           </div>
-
-          <div className="my-9 flex w-full items-center justify-center">
-            <BrandButton
-              type="submit"
-              brandVariant="primary"
-              className="rounded-2xl bg-black hover:bg-white hover:text-zinc-900"
-            >
-              {subscribing ? (
-                <span className="flex items-center gap-2">
-                  <Loader2 className="animate-spin" />
-                  Subscribing...
-                </span>
-              ) : (
-                'Subscribe'
-              )}
-            </BrandButton>
-          </div>
+          <BrandButton
+            type="submit"
+            variant="primaryDark"
+            disabled={isPending}
+            className="shrink-0"
+            leftIcon={
+              isPending ? <Loader2 className="size-4 animate-spin" /> : null
+            }
+          >
+            {isPending ? 'Subscribing...' : 'Subscribe'}
+          </BrandButton>
         </form>
       </div>
     </section>

@@ -1,21 +1,21 @@
 'use client';
 
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Eye, EyeOff, Loader2, Lock, Mail, Undo2 } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Eye, EyeOff, Loader2, Undo2 } from 'lucide-react';
-import { SignProvidersButtons } from './SignProviderButtons';
-import { loginSchema, type LoginFormValues } from '@/lib/schemas/auth';
+import { toast } from 'sonner';
+import { login } from '@/actions/auth';
+import AnimatedWrapper from '@/components/common/AnimatedWrapper';
+import { BrandButton } from '@/components/common/BrandButton';
+import { BrandInput } from '@/components/common/BrandInput';
 import { Card } from '@/components/ui/card';
 import { Form } from '@/components/ui/form';
 import { getErrorMessage } from '@/helpers/error.helpers';
-import { toast } from 'sonner';
-import { login } from '@/actions/auth';
-import { useRouter } from 'next/navigation';
-import { BrandButton } from '@/components/common/BrandButton';
-import { BrandInput } from '@/components/common/BrandInput';
-import AnimatedWrapper from '@/components/common/AnimatedWrapper';
+import { type LoginFormValues, loginSchema } from '@/lib/schemas/auth';
+import { SignProvidersButtons } from './SignProviderButtons';
 
 export const SignInForm = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -56,17 +56,17 @@ export const SignInForm = () => {
 
   return (
     <AnimatedWrapper type="slideInRight">
-      <div className="relative flex w-full items-center justify-center px-1 md:mx-auto md:w-[90%] md:px-6">
-        <Card className="w-full border px-3 shadow md:max-w-md md:border-none md:px-0 md:shadow-none">
+      <div className="relative flex w-full items-center justify-center rounded-lg border px-1 shadow md:mx-auto md:w-[90%] md:px-6 lg:border-none lg:shadow-none">
+        <Card className="w-full border-none px-3 py-9 shadow-none md:max-w-md md:px-0">
           <div className="mx-auto flex justify-center">
             <Link
               href="/"
-              className="font-primary hover:text-brand absolute top-5 left-3 flex cursor-pointer items-center rounded-full bg-white/90 px-4 py-2 text-center text-sm font-semibold italic shadow lg:hidden"
+              className="absolute top-5 left-3 flex cursor-pointer items-center rounded-full bg-white/90 px-4 py-2 text-center font-primary font-semibold text-sm italic shadow hover:text-brand lg:hidden"
             >
               <Undo2 className="mr-2 size-4" />
               HomeSphere
             </Link>
-            <h1 className="font-secondary mt-15 mb-1 text-center text-3xl font-bold md:mt-0">
+            <h1 className="mt-15 mb-1 text-center font-bold font-secondary text-3xl md:mt-10">
               Welcome Back to HomeSphere!
             </h1>
           </div>
@@ -82,6 +82,8 @@ export const SignInForm = () => {
                 type="email"
                 placeholder="you@example.com"
                 formRef={form}
+                required
+                leftElement={<Mail className="size-4" />}
               />
 
               <div className="relative">
@@ -91,53 +93,60 @@ export const SignInForm = () => {
                   type={showPassword ? 'text' : 'password'}
                   placeholder="*******"
                   formRef={form}
+                  required
+                  leftElement={<Lock className="size-4" />}
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="text-muted-foreground absolute top-1/2 right-3 -translate-y-1/2"
-                >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
+                <div className="relative float-right">
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute -top-4 right-3 -translate-y-1/2 text-muted-foreground"
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
               </div>
 
               <div className="flex items-center justify-end">
                 <Link
                   href="/forgot-password"
-                  className="text-primary font-secondary hover:text-brand-dark text-sm"
+                  className="font-secondary text-primary text-sm hover:text-brand-dark"
                 >
                   Forgot password?
                 </Link>
               </div>
 
-              <BrandButton type="submit" className="mx-auto w-[70%]">
-                {isLoggingIn ? (
-                  <>
-                    <Loader2 className="mr-2 size-4 animate-spin" />
-                    Logging in...
-                  </>
-                ) : (
-                  'Login'
-                )}
-              </BrandButton>
-
+              <div className="flex flex-col items-center justify-center gap-3">
+                <BrandButton
+                  type="submit"
+                  className="mx-auto w-[70%]"
+                  disabled={isLoggingIn}
+                  leftIcon={
+                    isLoggingIn ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : null
+                  }
+                >
+                  {isLoggingIn ? <>Logging in...</> : 'Login'}
+                </BrandButton>
+              </div>
               <div className="relative my-6">
                 <div className="absolute inset-0 flex items-center">
                   <span className="w-full border-t" />
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-background text-muted-foreground px-2">
+                  <span className="bg-background px-2 text-muted-foreground">
                     Instant Login
                   </span>
                 </div>
               </div>
               <SignProvidersButtons />
 
-              <p className="text-muted-foreground mt-6 text-center text-sm">
+              <p className="mt-6 text-center text-muted-foreground text-sm">
                 Don&apos;t have an account?{' '}
                 <Link
                   href="/sign-up"
-                  className="text-brand-dark font-secondary font-semibold hover:underline"
+                  className="font-secondary font-semibold text-brand-dark hover:underline"
                 >
                   Register
                 </Link>

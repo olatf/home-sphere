@@ -1,5 +1,5 @@
+import crypto from 'node:crypto';
 import { NextResponse } from 'next/server';
-import crypto from 'crypto';
 
 export async function POST(req: Request) {
   const { userId } = await req.json();
@@ -11,7 +11,7 @@ export async function POST(req: Request) {
 
   const signature = crypto
     .createHmac('sha256', apiKey)
-    .update(timestamp + partnerId + 'sid_request')
+    .update(`${timestamp + partnerId}sid_request`)
     .digest('hex');
 
   return NextResponse.json({

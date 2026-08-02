@@ -1,4 +1,4 @@
-import { usePaymentStore, PaymentConfig } from '@/stores/paymentStore';
+import { type PaymentConfig, usePaymentStore } from '@/stores/paymentStore';
 
 /**
  * usePayment — trigger the global payment modal from any component.

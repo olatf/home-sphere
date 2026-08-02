@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useRef } from 'react';
-import { FormField, FormItem, FormControl } from '@/components/ui/form';
-import Image from 'next/image';
 import { ImagePlus, X } from 'lucide-react';
+import Image from 'next/image';
+import { useRef, useState } from 'react';
 import type { Control, FieldValues, Path } from 'react-hook-form';
+import { FormControl, FormField, FormItem } from '@/components/ui/form';
 
 interface FeaturedImageFieldProps<T extends FieldValues> {
-  control: Control<T>;
+  control?: Control<T>;
   name: Path<T>;
   existingImageUrl?: string;
   accept_types?: string;
@@ -39,7 +39,7 @@ export function BrandImageEditor<T extends FieldValues>({
   const handleRemove = (
     fieldOnChange: (value: File | string | null) => void
   ) => {
-    if (preview && preview.startsWith('blob:')) {
+    if (preview?.startsWith('blob:')) {
       URL.revokeObjectURL(preview);
     }
     setPreview(null);
@@ -56,8 +56,9 @@ export function BrandImageEditor<T extends FieldValues>({
       render={({ field }) => (
         <FormItem className="mt-2">
           <FormControl>
+            {/* biome-ignore lint/a11y/noStaticElementInteractions: mouse handlers only toggle a visual hover preview, no action is triggered */}
             <div
-              className="hover:border-brand-primary relative flex h-32 cursor-pointer items-center justify-center overflow-hidden rounded-md border border-dashed border-gray-300 transition-colors hover:bg-gray-50"
+              className="relative flex h-32 items-center justify-center overflow-hidden rounded-md border border-gray-300 border-dashed transition-colors hover:border-brand-primary hover:bg-gray-50"
               onMouseEnter={() => setIsHovered(true)}
               onMouseLeave={() => setIsHovered(false)}
             >
@@ -71,7 +72,7 @@ export function BrandImageEditor<T extends FieldValues>({
                   />
                   {isHovered && (
                     <div className="absolute inset-0 flex items-center justify-center gap-4 bg-black/50 transition-opacity">
-                      <label className="flex cursor-pointer items-center gap-2 rounded-md bg-white px-3 py-2 text-sm font-medium transition-colors hover:bg-gray-100">
+                      <label className="flex cursor-pointer items-center gap-2 rounded-md bg-white px-3 py-2 font-medium text-sm transition-colors hover:bg-gray-100">
                         <ImagePlus className="h-4 w-4" />
                         Change
                         <input
@@ -91,7 +92,7 @@ export function BrandImageEditor<T extends FieldValues>({
                           e.stopPropagation();
                           handleRemove(field.onChange);
                         }}
-                        className="flex cursor-pointer items-center gap-2 rounded-md bg-red-500 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-red-600"
+                        className="flex cursor-pointer items-center gap-2 rounded-md bg-red-500 px-3 py-2 font-medium text-sm text-white transition-colors hover:bg-red-600"
                       >
                         <X className="h-4 w-4" />
                         Remove
@@ -102,10 +103,10 @@ export function BrandImageEditor<T extends FieldValues>({
               ) : (
                 <label className="flex h-full w-full cursor-pointer flex-col items-center justify-center">
                   <ImagePlus className="mb-2 h-10 w-10 text-gray-400" />
-                  <span className="text-sm font-medium text-gray-500">
+                  <span className="font-medium text-gray-500 text-sm">
                     Click to upload image
                   </span>
-                  <span className="mt-1 text-xs text-gray-400">
+                  <span className="mt-1 text-gray-400 text-xs">
                     {` ${accept_types} up to ${maxFileSizeMB}MB`}
                   </span>
                   <input

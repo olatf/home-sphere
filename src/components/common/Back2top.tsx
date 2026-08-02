@@ -1,40 +1,34 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { ArrowUp } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { BrandButton } from '@/components/common/BrandButton';
 import { cn } from '@/lib/utils';
 
 export default function BackToTop() {
   const [visible, setVisible] = useState(false);
 
-  const toggleVisible = () => {
-    const scrolled = window.scrollY;
-    setVisible(scrolled > 300); // Show button after 300px
-  };
-
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
   useEffect(() => {
-    window.addEventListener('scroll', toggleVisible);
-    return () => window.removeEventListener('scroll', toggleVisible);
+    const handleScroll = () => setVisible(window.scrollY > 300);
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   return (
-    <button
-      onClick={scrollToTop}
+    <BrandButton
+      onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
       className={cn(
-        'fixed right-5 bottom-5 z-50 rounded-full p-3 shadow-lg transition-all',
-        'bg-black text-white hover:bg-gray-800',
-        {
-          'pointer-events-none opacity-0': !visible,
-          'opacity-100': visible,
-        }
+        'fixed right-5 bottom-5 z-50 cursor-pointer rounded-full p-3 shadow-lg',
+        'bg-black text-white transition-all duration-300 hover:bg-gray-800',
+        'hover:-translate-y-1 hover:scale-110',
+        visible
+          ? 'translate-y-0 opacity-100'
+          : 'pointer-events-none translate-y-4 opacity-0'
       )}
       aria-label="Back to top"
     >
       <ArrowUp className="h-5 w-5" />
-    </button>
+    </BrandButton>
   );
 }

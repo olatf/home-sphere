@@ -27,27 +27,34 @@ const team: TeamMember[] = [
 
 export const TeamSection = () => {
   return (
-    <section className="bg-zinc-50 py-14">
-      <div className="container mx-auto px-6 lg:px-12">
-        <div className="mb-9">
+    <section className="bg-gray-50 py-24">
+      <div className="container mx-auto px-6 lg:px-16">
+        <div className="mb-14 text-center">
           <AnimatedWrapper type="slideInDown">
-            <h2 className="mb-4 text-4xl font-bold text-zinc-900">
+            <span className="mb-5 inline-flex items-center gap-2 rounded-full border border-brand-primary/15 bg-white px-4 py-1.5 font-medium font-secondary text-brand-primary text-sm">
+              The people behind Homesphere
+            </span>
+          </AnimatedWrapper>
+          <AnimatedWrapper type="slideInUp" delay={0.1}>
+            <h2 className="mb-4 font-bold font-primary text-4xl text-gray-900">
               Meet Our Team
             </h2>
           </AnimatedWrapper>
-          <AnimatedWrapper type="slideInUp">
-            <p className="max-w-2xl text-zinc-600">
-              The passionate professionals behind HomeSphere’s innovation.
+          <AnimatedWrapper type="slideInUp" delay={0.2}>
+            <p className="mx-auto max-w-2xl font-secondary text-gray-600">
+              The passionate professionals behind Homesphere&apos;s innovation.
             </p>
           </AnimatedWrapper>
         </div>
-        <AnimatedWrapper type="slideInLeft">
-          <div className="grid gap-10 md:grid-cols-3">
-            {team.map((member, index) => (
-              <div
-                key={index}
-                className="group overflow-hidden rounded-2xl bg-white shadow-sm transition duration-300 hover:shadow-xl"
-              >
+
+        <div className="grid gap-8 md:grid-cols-3">
+          {team.map((member, index) => (
+            <AnimatedWrapper
+              key={member.name}
+              type="slideInUp"
+              delay={index * 0.1}
+            >
+              <div className="group overflow-hidden rounded-2xl bg-white shadow-sm transition duration-300 hover:shadow-xl">
                 <div className="relative h-80">
                   <Image
                     src={member.image}
@@ -58,15 +65,17 @@ export const TeamSection = () => {
                 </div>
 
                 <div className="p-6 text-center">
-                  <h3 className="text-xl font-semibold text-zinc-900">
+                  <h3 className="font-primary font-semibold text-gray-900 text-xl">
                     {member.name}
                   </h3>
-                  <p className="mt-2 text-sm text-zinc-500">{member.role}</p>
+                  <p className="mt-2 font-secondary text-gray-500 text-sm">
+                    {member.role}
+                  </p>
                 </div>
               </div>
-            ))}
-          </div>
-        </AnimatedWrapper>
+            </AnimatedWrapper>
+          ))}
+        </div>
       </div>
     </section>
   );

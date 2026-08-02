@@ -1,7 +1,7 @@
-import { UseFormReturn } from 'react-hook-form';
-import { OnboardingValues } from '@/lib/schemas/onboarding';
+import type { UseFormReturn } from 'react-hook-form';
 import { BrandInput } from '@/components/common/BrandInput';
 import { BrandRadioSelectors } from '@/components/common/BrandRadioSelectors';
+import type { OnboardingValues } from '@/lib/schemas/onboarding';
 
 export default function RoleStep({
   form,
@@ -10,7 +10,7 @@ export default function RoleStep({
 }) {
   return (
     <div className="space-y-7">
-      <p className="font-secondary text-base font-semibold">
+      <p className="font-secondary font-semibold text-base">
         What is your role?
       </p>
       <BrandRadioSelectors<OnboardingValues['role']>
@@ -31,6 +31,7 @@ export default function RoleStep({
           <BrandInput
             formRef={form}
             name="nationality"
+            placeholder="Select Nationality"
             label="Nationality"
             variant="country"
             required
@@ -39,6 +40,7 @@ export default function RoleStep({
           <BrandInput
             formRef={form}
             name="city"
+            placeholder="Select City"
             label="City"
             variant="state"
             required

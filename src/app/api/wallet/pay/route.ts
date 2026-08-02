@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
-import { createAdminClient } from '@/lib/supabase/admin';
-import { generateReference } from '@/lib/paystack';
-import { TransactionType } from '@/stores/paymentStore';
 import { getErrorMessage } from '@/helpers/error.helpers';
+import { generateReference } from '@/lib/paystack';
+import { createAdminClient } from '@/lib/supabase/admin';
+import { createClient } from '@/lib/supabase/server';
+import type { TransactionType } from '@/stores/paymentStore';
 
 interface WalletPaymentBody {
   amount: number;

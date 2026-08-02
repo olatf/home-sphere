@@ -5,7 +5,7 @@ export type Role =
   | 'superAdmin'
   | 'administrator';
 
-type Permission =
+export type Permission =
   | 'admin:access'
   | 'superAdmin:access'
   | 'administrator:access'
@@ -13,7 +13,10 @@ type Permission =
   | 'manage-properties:access'
   | 'book-inspect:access'
   | 'approve-properties:access'
+  | 'can-assign-tasks:access'
+  | 'can-forward-tasks:access'
   | 'manage-users:access'
+  | 'can-manage-inspection:access'
   | 'verify-accounts:access';
 
 type PermissionCheck = boolean;
@@ -27,6 +30,9 @@ const accessPolice: Record<
     'verify-accounts:access': true,
     'approve-properties:access': true,
     'manage-users:access': true,
+    'can-assign-tasks:access': true,
+    'can-forward-tasks:access': true,
+    'can-manage-inspection:access': true,
   },
   superAdmin: {
     'admin:access': true,
@@ -35,7 +41,9 @@ const accessPolice: Record<
     'manage-users:access': true,
     'manage-properties:access': true,
     'book-inspect:access': true,
-    'approve-properties:access': true,
+    'can-manage-inspection:access': true,
+    'can-assign-tasks:access': true,
+    'can-forward-tasks:access': true,
     'verify-accounts:access': true,
   },
   landlord: {

@@ -1,16 +1,16 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
-import { safeStr } from '@/helpers/data.helpers';
 import type { Provider, User } from '@supabase/supabase-js';
+import { redirect } from 'next/navigation';
 import { SITE_URL } from '@/config/constants';
-import { OnboardingValues } from '@/lib/schemas/onboarding';
+import { safeStr } from '@/helpers/data.helpers';
+import { capitalizeWords } from '@/helpers/formatters.helpers';
+import type { OnboardingValues } from '@/lib/schemas/onboarding';
+import { createAdminClient } from '@/lib/supabase/admin';
+import { createClient } from '@/lib/supabase/server';
 import { getResetPasswordEmailHTML } from '@/templates/emails/getResetPasswordEmail';
 import { sendEmail } from './sendEmail';
-import { redirect } from 'next/navigation';
 import { uploadFile } from './uploadFile';
-import { capitalizeWords } from '@/helpers/formatters.helpers';
-import { getOnboardingEmailHTML } from '@/templates/emails/getOnboardingEmail';
 
 export const signUp = async (email: string) => {
   const supabase = await createClient();
@@ -291,14 +291,8 @@ export const completeOnboarding = async ({
   }
 
   const uploads = await Promise.all([
-    uploadFile(data.selfieImage, 'verification-documents', '', user.id, false),
-    uploadFile(
-      data.meansOfIdentification,
-      'verification-documents',
-      '',
-      user.id,
-      false
-    ),
+    uploadFile(data.selfieImage, 'verification-documents', '', false),
+    uploadFile(data.meansOfIdentification, 'verification-documents', '', false),
   ]);
 
   const [selfieImg, verificationImg] = uploads;
@@ -346,18 +340,53 @@ export const completeOnboarding = async ({
     throw new Error(roleUpdateError.message);
   }
 
-  if (user.id && user.email) {
-    const html = getOnboardingEmailHTML(
-      capitalizeWords(safeStr(user.user_metadata?.full_name))
-    );
-    // send onboarding confirmation email
-    await sendEmail({
-      to: user.email,
-      subject: `Welcome to HomeSphere! Your onboarding is complete. Verification underway...`,
-      html,
-      from: 'HomeSphere <onboarding@resend.dev>',
-    });
-  }
+  // if (user.id && user.email) {
+  //   const html = getOnboardingEmailHTML(
+  //     capitalizeWords(safeStr(user.user_metadata?.full_name))
+  //   );
+  //   // send onboarding confirmation email
+  //   await sendEmail({
+  //     to: user.email,
+  //     subject: `Welcome to HomeSphere! Your onboarding is complete. Verification underway...`,
+  //     html,
+  //     from: 'HomeSphere <onboarding@resend.dev>',
+  //   });
+  // }
 
   return { success: true };
+};
+
+export const getAvailableUsers = async () => {
+  const admin = await createAdminClient();
+
+  const [
+    { data: users, error: usersError },
+    { data: roles, error: rolesError },
+  ] = await Promise.all([
+    admin.from('user_profiles').select('id, full_name, email, avatar_url'),
+
+    admin.from('user_roles').select('user_id, role'),
+  ]);
+
+  if (usersError || rolesError) {
+    return {
+      success: false,
+      error: usersError?.message || rolesError?.message,
+      data: null,
+    };
+  }
+
+  const refinedData = users?.map(user => {
+    const userRole = roles?.find(role => role.user_id === user.id);
+
+    return {
+      ...user,
+      role: userRole?.role,
+    };
+  });
+
+  return {
+    success: true,
+    data: refinedData,
+  };
 };

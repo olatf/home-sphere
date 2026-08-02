@@ -6,11 +6,11 @@ export const BrandLogo = ({ isScrolled }: { isScrolled?: boolean }) => {
   return (
     <Link href="/" className="mx-0 flex items-center md:mx-6">
       <House
-        className={isScrolled ? 'text-brand size-8' : 'size-8 text-white'}
+        className={isScrolled ? 'size-8 text-brand' : 'size-8 text-white'}
       />
       <span
         className={cn(
-          'font-secondary text-foreground text-md ml-1 font-bold lg:ml-2 lg:text-xl',
+          'ml-1 font-bold font-secondary text-foreground text-md lg:ml-2 lg:text-xl',
           isScrolled ? 'text-brand' : 'text-white'
         )}
       >

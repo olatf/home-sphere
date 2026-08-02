@@ -1,8 +1,8 @@
+import crypto from 'node:crypto';
 import { NextResponse } from 'next/server';
-import crypto from 'crypto';
-import { createClient } from '@/lib/supabase/server';
-import { createAdminClient } from '@/lib/supabase/admin';
 import { PAYSTACK_SECRET_KEY } from '@/config/constants';
+import { createAdminClient } from '@/lib/supabase/admin';
+import { createClient } from '@/lib/supabase/server';
 
 /**
  * Paystack sends webhook events for payment.success, transfer.success, etc.

@@ -1,3 +1,8 @@
-export default function ListingPage() {
-  return <div>This is the listing page</div>;
+import { LandlordPropertyDisplay } from '@/landLords';
+export default function DashboardPage() {
+  return (
+    <section className="p-3 md:p-4">
+      <LandlordPropertyDisplay />
+    </section>
+  );
 }

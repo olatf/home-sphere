@@ -1,11 +1,11 @@
 'use client';
 
-import { WalletSummary } from './WalletSummary';
 import { useMemo } from 'react';
-import { useVerificationStatus } from '@/hooks/useVerificationStatus';
-import { useUserProfile } from '@/hooks/useUserProfile';
-import { VerificationStatusSteps } from '@/verification';
 import { BrandLoader } from '@/components/common/BrandLoader';
+import { useUserProfile } from '@/hooks/useUserProfile';
+import { useVerificationStatus } from '@/hooks/useVerificationStatus';
+import { VerificationStatusSteps } from '@/verification';
+import { WalletSummary } from './WalletSummary';
 
 export const SummaryHeader = () => {
   const { profile, isLoading } = useUserProfile();
@@ -34,7 +34,7 @@ export const SummaryHeader = () => {
 
   return (
     <div className="relative flex w-full flex-row justify-between gap-2 md:items-center md:gap-4">
-      <h1 className="font-primary flex items-center gap-1 text-base font-semibold text-zinc-900 md:gap-2 md:text-xl">
+      <h1 className="flex items-center gap-1 font-primary font-semibold text-base text-zinc-900 md:gap-2 md:text-xl">
         Hello, {profile?.full_name}
       </h1>
 

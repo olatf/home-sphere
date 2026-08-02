@@ -1,28 +1,30 @@
 'use client';
 
-import { useReducer, useRef, useEffect } from 'react';
+import consola from 'consola';
 import {
-  Send,
-  Search,
-  Loader2,
-  CheckCircle2,
-  X,
   ArrowRight,
+  CheckCircle2,
+  Loader2,
+  Search,
+  Send,
+  X,
 } from 'lucide-react';
+import { useEffect, useReducer, useRef } from 'react';
+import { BrandAvatar } from '@/components/common/BrandAvatar';
+import { BrandButton } from '@/components/common/BrandButton';
+import { BrandInput, type FormValue } from '@/components/common/BrandInput';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { formatCurrency } from '@/helpers/currency.helpers';
 import { safeStr } from '@/helpers/data.helpers';
-import { useUserWallet } from '@/hooks/useWallet';
+import { getErrorMessage } from '@/helpers/error.helpers';
 import { useInvalidateWallet } from '@/hooks/Useinvalidatewallet';
 import { usePinGuard } from '@/hooks/usePinGuard';
-import { formatCurrency } from '@/helpers/currency.helpers';
-import { BrandAvatar } from '@/components/common/BrandAvatar';
-import { getErrorMessage } from '@/helpers/error.helpers';
-import consola from 'consola';
+import { useUserWallet } from '@/hooks/useWallet';
 
 interface Recipient {
   wallet_id: string;
@@ -131,7 +133,9 @@ export function TransferModal({ isOpen, onClose }: TransferModalProps) {
   const balance = wallet?.balance ?? 0;
   const numericAmount = parseFloat(amount);
   const isAmountValid =
-    !isNaN(numericAmount) && numericAmount >= 100 && numericAmount <= balance;
+    !Number.isNaN(numericAmount) &&
+    numericAmount >= 100 &&
+    numericAmount <= balance;
 
   // Debounced recipient lookup
   useEffect(() => {
@@ -210,7 +214,7 @@ export function TransferModal({ isOpen, onClose }: TransferModalProps) {
           <DialogHeader className="border-b px-6 py-4">
             <div className="flex items-center gap-2">
               <Send className="h-5 w-5 text-emerald-600" />
-              <DialogTitle className="text-lg font-semibold text-gray-900">
+              <DialogTitle className="font-semibold text-gray-900 text-lg">
                 Transfer Funds
               </DialogTitle>
             </div>
@@ -220,10 +224,10 @@ export function TransferModal({ isOpen, onClose }: TransferModalProps) {
             {step === 'success' && recipient && (
               <div className="flex flex-col items-center gap-3 py-8 text-center">
                 <CheckCircle2 className="h-14 w-14 text-emerald-500" />
-                <p className="text-lg font-semibold text-gray-800">
+                <p className="font-semibold text-gray-800 text-lg">
                   Transfer Successful!
                 </p>
-                <p className="text-sm text-gray-500">
+                <p className="text-gray-500 text-sm">
                   {formatCurrency(numericAmount)} sent to{' '}
                   <span className="font-medium text-gray-700">
                     {recipient.name}
@@ -236,45 +240,46 @@ export function TransferModal({ isOpen, onClose }: TransferModalProps) {
             {step === 'processing' && (
               <div className="flex flex-col items-center gap-3 py-10">
                 <Loader2 className="h-10 w-10 animate-spin text-emerald-500" />
-                <p className="text-sm text-gray-500">Processing transfer...</p>
+                <p className="text-gray-500 text-sm">Processing transfer...</p>
               </div>
             )}
 
             {step === 'lookup' && (
               <div className="space-y-5">
                 <div className="rounded-xl bg-emerald-50 px-4 py-3">
-                  <p className="text-xs text-emerald-700">Available Balance</p>
-                  <p className="text-xl font-bold text-emerald-700">
+                  <p className="text-emerald-700 text-xs">Available Balance</p>
+                  <p className="font-bold text-emerald-700 text-xl">
                     {formatCurrency(balance)}
                   </p>
                 </div>
 
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-gray-700">
-                    Wallet ID or Email
-                  </label>
                   <div className="relative">
-                    <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
-                    <input
+                    <BrandInput
+                      name="recipient"
                       type="text"
+                      label="Wallet ID or Email"
                       placeholder="e.g. HMS-B6BA7F9E or user@email.com"
                       value={query}
-                      onChange={e =>
-                        dispatch({ type: 'SET_QUERY', payload: e.target.value })
+                      onChange={(value: FormValue) => {
+                        const rawValue = value?.toString() ?? '';
+                        dispatch({ type: 'SET_QUERY', payload: rawValue });
+                      }}
+                      leftElement={<Search className="size-4" />}
+                      rightElement={
+                        lookupLoading && (
+                          <Loader2 className="absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 animate-spin text-gray-400" />
+                        )
                       }
-                      className="focus:border-brand-light/50 focus:ring-brand-light/50 w-full rounded-xl border border-gray-200 py-3 pr-4 pl-9 text-sm focus:ring-2 focus:outline-none"
                     />
-                    {lookupLoading && (
-                      <Loader2 className="absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 animate-spin text-gray-400" />
-                    )}
                   </div>
-                  <p className="mt-1 text-xs text-gray-400">
+                  <p className="mt-1 text-gray-400 text-xs">
                     Enter at least 3 characters to search.
                   </p>
                 </div>
 
                 {lookupError && !lookupLoading && (
-                  <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">
+                  <p className="rounded-lg bg-red-50 px-3 py-2 text-red-600 text-sm">
                     {lookupError}
                   </p>
                 )}
@@ -283,35 +288,36 @@ export function TransferModal({ isOpen, onClose }: TransferModalProps) {
                   <div className="flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3">
                     <RecipientAvatar recipient={recipient} />
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-semibold text-gray-800">
+                      <p className="truncate font-semibold text-gray-800 text-sm">
                         {recipient.name}
                       </p>
-                      <p className="truncate text-xs text-gray-500">
+                      <p className="truncate text-gray-500 text-xs">
                         {recipient.email}
                       </p>
-                      <p className="mt-0.5 text-xs font-medium text-emerald-600">
+                      <p className="mt-0.5 font-medium text-emerald-600 text-xs">
                         {recipient.display_wallet_id}
                       </p>
                     </div>
-                    <button
+                    <BrandButton
                       onClick={() => dispatch({ type: 'CLEAR_RECIPIENT' })}
                       className="rounded-full p-1 text-gray-400 transition hover:text-gray-600"
                     >
                       <X className="h-4 w-4" />
-                    </button>
+                    </BrandButton>
                   </div>
                 )}
 
-                <button
+                <BrandButton
                   onClick={() => {
                     if (recipient)
                       dispatch({ type: 'SET_STEP', payload: 'amount' });
                   }}
                   disabled={!recipient}
-                  className="hover:bg-brand-dark/80 bg-brand flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-50"
+                  className="font-semibold text-sm text-white transition disabled:cursor-not-allowed disabled:opacity-50"
+                  rightIcon={<ArrowRight className="size-4" />}
                 >
-                  Continue <ArrowRight className="h-4 w-4" />
-                </button>
+                  Continue
+                </BrandButton>
               </div>
             )}
 
@@ -320,100 +326,101 @@ export function TransferModal({ isOpen, onClose }: TransferModalProps) {
                 <div className="flex items-center gap-3 rounded-xl bg-gray-50 px-4 py-3">
                   <RecipientAvatar recipient={recipient} />
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-semibold text-gray-800">
+                    <p className="font-semibold text-gray-800 text-sm">
                       {recipient.name}
                     </p>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-gray-500 text-xs">
                       {recipient.display_wallet_id}
                     </p>
                   </div>
-                  <button
+                  <BrandButton
                     onClick={() =>
                       dispatch({ type: 'SET_STEP', payload: 'lookup' })
                     }
-                    className="text-brand text-xs hover:underline"
+                    variant="link"
+                    size="sm"
                   >
                     Change
-                  </button>
+                  </BrandButton>
                 </div>
 
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-gray-700">
-                    Amount (₦)
-                  </label>
                   <div className="relative">
-                    <span className="absolute top-1/2 left-3 -translate-y-1/2 font-medium text-gray-400">
-                      ₦
-                    </span>
-                    <input
+                    <BrandInput
+                      name="amount"
                       type="number"
+                      label="Amount (₦)"
                       min={100}
                       max={balance}
                       placeholder="Enter amount"
                       value={amount}
-                      onChange={e =>
-                        dispatch({
-                          type: 'SET_AMOUNT',
-                          payload: e.target.value,
-                        })
-                      }
-                      className="focus:border-brand-light/50 focus:ring-brand-light/50 w-full rounded-xl border border-gray-200 py-3 pr-4 pl-7 text-base focus:ring-2 focus:outline-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                      onChange={(value: FormValue) => {
+                        const rawValue = value?.toString() ?? '';
+                        dispatch({ type: 'SET_AMOUNT', payload: rawValue });
+                      }}
                     />
                   </div>
                   <div className="mt-1 flex items-center justify-between">
-                    <p className="text-xs text-gray-400">Minimum: ₦100</p>
-                    <button
+                    <p className="text-gray-400 text-xs">Minimum: ₦100</p>
+                    <BrandButton
                       onClick={() =>
                         dispatch({
                           type: 'SET_AMOUNT',
                           payload: String(balance),
                         })
                       }
-                      className="text-xs text-emerald-600 hover:underline"
+                      className="text-emerald-600 text-xs hover:underline"
                     >
                       Send max ({formatCurrency(balance)})
-                    </button>
+                    </BrandButton>
                   </div>
                   {numericAmount > balance && (
-                    <p className="mt-1 text-xs text-red-500">
+                    <p className="mt-1 text-red-500 text-xs">
                       Amount exceeds available balance
                     </p>
                   )}
                 </div>
 
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-gray-700">
+                  <div className="mb-1.5 block font-medium text-gray-700 text-sm">
                     Note{' '}
                     <span className="font-normal text-gray-400">
                       (optional)
                     </span>
-                  </label>
-                  <input
+                  </div>
+                  <BrandInput
+                    name="note"
                     type="text"
                     maxLength={100}
                     placeholder="e.g. Rent for March"
                     value={note}
-                    onChange={e =>
-                      dispatch({ type: 'SET_NOTE', payload: e.target.value })
-                    }
-                    className="focus:border-brand-light/50 focus:ring-brand-light/50 w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:ring-2 focus:outline-none"
+                    onChange={(value: FormValue) => {
+                      const rawValue = value?.toString() ?? '';
+                      dispatch({ type: 'SET_NOTE', payload: rawValue });
+                    }}
                   />
                 </div>
 
                 {transferError && (
-                  <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">
+                  <p className="rounded-lg bg-red-50 px-3 py-2 text-red-600 text-sm">
                     {transferError}
                   </p>
                 )}
 
-                <button
+                {transferError && (
+                  <p className="rounded-lg bg-red-50 px-3 py-2 text-red-600 text-sm">
+                    {transferError}
+                  </p>
+                )}
+
+                <BrandButton
                   onClick={handleTransfer}
                   disabled={!isAmountValid}
-                  className="hover:bg-brand-dark/80 bg-brand flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-50"
+                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-brand py-3 font-semibold text-sm text-white transition hover:bg-brand-dark/80 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <Send className="h-4 w-4" />
                   Send {isAmountValid ? formatCurrency(numericAmount) : ''}
-                </button>
+                </BrandButton>
               </div>
             )}
           </div>

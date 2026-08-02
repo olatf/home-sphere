@@ -1,10 +1,13 @@
-import { PropertyGrid, PropertyHero } from '@/property';
+import { OverviewDashboard } from '@/dashboards';
+import { PropertyHero } from '@/property';
 
 export default function PropertiesPage() {
   return (
-    <main className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50">
       <PropertyHero />
-      <PropertyGrid />
-    </main>
+      <div className="p-3 md:p-4">
+        <OverviewDashboard />
+      </div>
+    </div>
   );
 }

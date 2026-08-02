@@ -1,13 +1,15 @@
 import {
-  Telescope,
+  FileText,
+  HandCoins,
   Handshake,
+  Heart,
   Landmark,
   ListChecks,
-  Wallet,
-  FileText,
-  Heart,
   MessageSquareMore as Messages,
+  Telescope,
   UserCog,
+  UsersRound,
+  Wallet,
 } from 'lucide-react';
 export type DashboardRoute = {
   path: string;
@@ -81,6 +83,54 @@ export const CommonRoutes: DashboardRoute[] = [
   },
   {
     path: '/dashboard/settings',
+    label: 'Settings',
+    icon: <UserCog size={20} />,
+  },
+];
+
+export const AdminRoutes: DashboardRoute[] = [
+  {
+    path: '/admin',
+    label: 'Overview',
+    icon: <Telescope size={20} />,
+  },
+  {
+    path: '/admin/properties',
+    label: 'properties',
+    icon: <Landmark size={20} />,
+  },
+  {
+    path: '/admin/users',
+    label: 'Users',
+    icon: <UsersRound size={20} />,
+  },
+  {
+    path: '/admin/tenants',
+    label: 'Tenants',
+    icon: <Handshake size={20} />,
+  },
+  {
+    path: '/admin/tasks',
+    label: 'Tasks',
+    icon: <ListChecks size={20} />,
+  },
+  {
+    path: '/admin/inspections-fees',
+    label: 'Inspection Fees',
+    icon: <HandCoins size={20} />,
+  },
+  {
+    path: '/admin/wallet',
+    label: 'Wallet',
+    icon: <Wallet size={20} />,
+  },
+  {
+    path: '/admin/messages',
+    label: 'Messages',
+    icon: <Messages size={20} />,
+  },
+  {
+    path: '/admin/settings',
     label: 'Settings',
     icon: <UserCog size={20} />,
   },

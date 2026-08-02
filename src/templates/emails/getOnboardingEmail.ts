@@ -1,6 +1,6 @@
 export function getOnboardingEmailHTML(userName?: string): string {
   const name = userName?.trim() || 'there';
-  const BRAND = '#6366f1';
+  const BRAND = '#1b5e40';
   const YEAR = new Date().getFullYear();
 
   return `<!doctype html>

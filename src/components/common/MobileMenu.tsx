@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { BrandButton } from './BrandButton';
+import { ProfileTracker } from '@/components/common/ProfileTracker';
 import {
   Drawer,
   DrawerContent,
@@ -7,9 +7,10 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from '@/components/ui/drawer';
-import { ProfileTracker } from '@/components/common/ProfileTracker';
 import { headerLinks } from '@/data/HeaderLinks';
+import { BrandButton } from './BrandButton';
 import { BrandLogo } from './BrandLogo';
+
 interface MobileMenuProps {
   open: boolean;
   onClose: () => void;
@@ -24,7 +25,7 @@ export const MobileMenu = ({
   return (
     <Drawer open={open} onOpenChange={onClose} direction={'right'}>
       <DrawerContent className="z-100 min-w-full border-none! bg-zinc-900 p-2 text-center">
-        <div className="font-secondary size-full rounded-xl p-5 text-white">
+        <div className="size-full rounded-xl p-5 font-secondary text-white">
           <DrawerHeader className="sr-only">
             <DrawerTitle>Mobile Menu</DrawerTitle>
             <DrawerDescription>This is a mobile menu.</DrawerDescription>
@@ -34,7 +35,7 @@ export const MobileMenu = ({
             type="button"
             aria-label="Close menu"
             onClick={onClose}
-            className="absolute top-6 right-6 text-base font-medium md:text-[20px]"
+            className="absolute top-6 right-6 font-medium text-base md:text-[20px]"
           >
             Close
           </button>
@@ -43,11 +44,11 @@ export const MobileMenu = ({
             <div className="flex justify-center pt-6">
               <BrandLogo />
             </div>
-            <ul className="font-primary mt-25 flex flex-col items-center space-y-10 md:space-y-16">
+            <ul className="mt-25 flex flex-col items-center space-y-10 font-primary md:space-y-16">
               {headerLinks.map(link => (
                 <li
                   key={link.name}
-                  className="text-center text-3xl font-semibold md:text-6xl"
+                  className="text-center font-semibold text-3xl md:text-6xl"
                 >
                   <Link
                     href={link.href}
@@ -67,7 +68,7 @@ export const MobileMenu = ({
             ) : (
               <BrandButton
                 asChild
-                brandVariant="primary"
+                variant="primary"
                 className="absolute bottom-2 min-h-15 w-full"
               >
                 <Link href="/sign-in">Sign In</Link>

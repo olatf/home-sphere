@@ -1,10 +1,12 @@
-import { SignInForm, SideDisplay } from '@/components/auth';
+import { SideDisplay, SignInForm } from '@/components/auth';
 
 export default function SignInPage() {
   return (
-    <section className="mx-auto grid h-screen grid-cols-1 px-3 pt-9 md:max-w-6xl md:grid-cols-2 md:px-9 md:pt-10">
-      <SideDisplay />
-      <SignInForm />
+    <section className="flex min-h-screen w-full items-center justify-center px-3 md:px-5 lg:px-9">
+      <div className="mx-auto grid w-full max-w-6xl grid-cols-1 lg:grid-cols-2">
+        <SideDisplay />
+        <SignInForm />
+      </div>
     </section>
   );
 }

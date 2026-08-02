@@ -1,3 +1,8 @@
+import { MyWishList } from '@/tenants';
 export default function WistListPage() {
-  return <div>This is the wishlist page</div>;
+  return (
+    <div className="p-3 md:p-4">
+      <MyWishList />
+    </div>
+  );
 }

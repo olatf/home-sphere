@@ -1,48 +1,52 @@
-'use client';
+import { MapPin } from 'lucide-react';
+import type { Property } from '@/types/property';
+import { PropertyCard } from './PropertyCard';
 
-import { mockProperties } from '@/data/MockProperty';
-import { PropertyFilter } from '@/components/common/PropertyFilter';
-import { PropertyCard } from '@/sections/home';
-import { Pagination } from '@/components/common/Pagination';
-import { usePropertyFilter } from '@/hooks/usePropertyFilter';
-import AnimatedWrapper from '@/components/common/AnimatedWrapper';
+interface PropertyGridProps {
+  properties: Property[];
+  bookmarkedIds?: string[];
+  showStatus?: boolean;
+  userId: string;
+  hrefPrefix?: string;
+  emptyMessage?: string;
+}
 
-export const PropertyGrid = () => {
-  const { paginatedItems, totalPages, currentPage, goToPage } =
-    usePropertyFilter(mockProperties);
-
-  return (
-    <section className="bg-zinc-50 py-10">
-      <div className="container mx-auto px-6 lg:px-16">
-        <AnimatedWrapper type="slideInDown">
-          <div className="my-2 md:my-9">
-            <PropertyFilter />
-          </div>
-        </AnimatedWrapper>
-
-        <AnimatedWrapper type="slideInDown">
-          <div className="grid gap-8 md:grid-cols-3">
-            {paginatedItems.length > 0 ? (
-              paginatedItems.map(p => <PropertyCard key={p.id} {...p} />)
-            ) : (
-              <div className="col-span-full my-9 text-center text-zinc-600">
-                No properties found matching your criteria.
-              </div>
-            )}
-          </div>
-        </AnimatedWrapper>
-
-        {/* Pagination */}
-        <AnimatedWrapper type="slideInDown">
-          <div className="mt-12 flex justify-center gap-4">
-            <Pagination
-              page={currentPage}
-              totalPages={totalPages}
-              onPageChange={goToPage}
-            />
-          </div>
-        </AnimatedWrapper>
+export function PropertyGrid({
+  properties,
+  userId,
+  bookmarkedIds = [],
+  showStatus = false,
+  hrefPrefix = '/properties',
+  emptyMessage = 'No properties found.',
+}: PropertyGridProps) {
+  if (properties.length === 0) {
+    return (
+      <div className="flex flex-col items-center gap-3 py-20 text-center">
+        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-brand/10">
+          <MapPin className="h-7 w-7 text-brand-light" />
+        </div>
+        <p className="font-medium font-primary text-gray-500 text-sm">
+          {emptyMessage}
+        </p>
       </div>
-    </section>
+    );
+  }
+  return (
+    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      {properties.map(p => {
+        const isOwner = p.landlord_id === userId;
+
+        return (
+          <PropertyCard
+            key={p.id}
+            isLandLord={isOwner}
+            property={p}
+            isBookmarked={bookmarkedIds.includes(p.id)}
+            showStatus={showStatus}
+            href={`${hrefPrefix}/${p.id}`}
+          />
+        );
+      })}
+    </div>
   );
-};
+}

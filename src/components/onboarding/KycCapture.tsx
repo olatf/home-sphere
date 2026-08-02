@@ -1,12 +1,12 @@
 'use client';
 
-import Webcam from 'react-webcam';
-import { useRef, useState } from 'react';
-import { UseFormReturn } from 'react-hook-form';
-import { OnboardingValues } from '@/lib/schemas/onboarding';
-import { BrandInput } from '@/components/common/BrandInput';
+import { CameraIcon, Trash2 } from 'lucide-react';
 import Image from 'next/image';
-import { Trash2, CameraIcon } from 'lucide-react';
+import { useRef, useState } from 'react';
+import type { UseFormReturn } from 'react-hook-form';
+import Webcam from 'react-webcam';
+import { BrandInput } from '@/components/common/BrandInput';
+import type { OnboardingValues } from '@/lib/schemas/onboarding';
 import { BrandButton } from '../common/BrandButton';
 
 export default function KycCapture({
@@ -28,7 +28,7 @@ export default function KycCapture({
 
   return (
     <div className="space-y-5">
-      <h2 className="font-secondary text-base font-semibold">
+      <h2 className="font-secondary font-semibold text-base">
         {selfie ? 'Your Selfie' : 'Take Selfie'}
       </h2>
 
@@ -46,7 +46,7 @@ export default function KycCapture({
 
               {!cameraReady && !cameraError && (
                 <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-gray-200">
-                  <p className="text-sm text-gray-600">
+                  <p className="text-gray-600 text-sm">
                     Requesting camera access...
                   </p>
                 </div>
@@ -54,7 +54,7 @@ export default function KycCapture({
 
               {cameraError && (
                 <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-red-100">
-                  <p className="text-sm text-red-500">
+                  <p className="text-red-500 text-sm">
                     Camera access denied. Please allow permission.
                   </p>
                 </div>
@@ -63,7 +63,7 @@ export default function KycCapture({
 
             <BrandButton
               type="button"
-              brandVariant="tertiary"
+              variant="ghost"
               onClick={captureSelfie}
               className="hover:text-green-500"
             >
@@ -78,11 +78,11 @@ export default function KycCapture({
               alt="Selfie preview"
               width={300}
               height={300}
-              className="object-fit rounded-xl"
+              className="rounded-xl object-fit"
             />
             <BrandButton
               type="button"
-              brandVariant="tertiary"
+              variant="ghost"
               onClick={() => setSelfie(null)}
               className="hover:text-red-500"
             >

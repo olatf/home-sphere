@@ -1,22 +1,23 @@
 'use client';
 
+import { AlertCircle, Eye, EyeOff, Loader2, ShieldCheck } from 'lucide-react';
 import {
-  useState,
-  useRef,
+  type ClipboardEvent,
+  type KeyboardEvent,
   useCallback,
-  KeyboardEvent,
-  ClipboardEvent,
+  useRef,
+  useState,
 } from 'react';
-import { ShieldCheck, Loader2, Eye, EyeOff, AlertCircle } from 'lucide-react';
+import { verifyPin } from '@/actions/wallets';
+import { BrandInput, type FormValue } from '@/components/common/BrandInput';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from '@/components/ui/dialog';
-import { verifyPin } from '@/actions/wallets';
-import { PIN_LENGTH, MAX_ATTEMPTS } from '@/config/constants';
+import { MAX_ATTEMPTS, PIN_LENGTH } from '@/config/constants';
 
 interface PinPromptModalProps {
   isOpen: boolean;
@@ -138,26 +139,29 @@ export const PinPromptModal = ({
     }
   }
 
+  const PIN_ARRAY = [1, 2, 3, 4];
+
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <DialogContent className="font-secondary z-200 w-full max-w-sm rounded-2xl p-0">
+      <DialogContent className="z-200 w-full max-w-sm rounded-2xl p-0 font-secondary">
         <DialogHeader className="border-b px-6 py-4">
           <div className="flex items-center gap-2">
             <ShieldCheck className="h-5 w-5 text-emerald-600" />
-            <DialogTitle className="font-primary text-base font-semibold text-gray-900">
+            <DialogTitle className="font-primary font-semibold text-base text-gray-900">
               {title}
             </DialogTitle>
           </div>
           <DialogDescription className="sr-only">{subtitle}</DialogDescription>
         </DialogHeader>
 
-        <div className="font-secondary space-y-5 p-6">
-          <p className="text-center text-sm text-gray-500">{subtitle}</p>
+        <div className="space-y-5 p-6 font-secondary">
+          <p className="text-center text-gray-500 text-sm">{subtitle}</p>
 
           <div className="flex justify-center gap-3">
-            {Array.from({ length: PIN_LENGTH }).map((_, i) => (
-              <input
-                key={i}
+            {PIN_ARRAY.map((val, i) => (
+              <BrandInput
+                key={val}
+                name="pin"
                 ref={el => {
                   refs.current[i] = el;
                 }}
@@ -165,16 +169,16 @@ export const PinPromptModal = ({
                 inputMode="numeric"
                 maxLength={1}
                 value={pin[i] ?? ''}
-                onChange={e => handleChange(i, e.target.value)}
+                onChange={(val: FormValue) => handleChange(i, val as string)}
                 onKeyDown={e => handleKeyDown(i, e)}
                 onPaste={handlePaste}
                 disabled={status === 'locked' || status === 'verifying'}
-                className={`h-14 w-14 rounded-xl border-2 text-center text-xl font-bold transition focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 ${
+                className={`h-14 w-14 rounded-xl border-2 text-center font-bold text-xl transition focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 ${
                   status === 'error'
                     ? 'border-red-400 bg-red-50 text-red-600'
                     : pin[i]
                       ? 'border-brand bg-brand-light/30 text-brand-light'
-                      : 'focus:border-brand border-gray-200 bg-gray-50 focus:bg-white'
+                      : 'border-gray-200 bg-gray-50 focus:border-brand focus:bg-white'
                 }`}
               />
             ))}
@@ -184,7 +188,7 @@ export const PinPromptModal = ({
             <button
               type="button"
               onClick={() => setVisible(v => !v)}
-              className="flex items-center gap-1.5 text-xs text-gray-400 transition hover:text-gray-600"
+              className="flex items-center gap-1.5 text-gray-400 text-xs transition hover:text-gray-600"
             >
               {visible ? (
                 <EyeOff className="h-3.5 w-3.5" />
@@ -196,7 +200,7 @@ export const PinPromptModal = ({
           </div>
 
           {(status === 'error' || status === 'locked') && error && (
-            <div className="flex items-center gap-2 rounded-lg bg-red-50 px-3 py-2.5 text-sm text-red-600">
+            <div className="flex items-center gap-2 rounded-lg bg-red-50 px-3 py-2.5 text-red-600 text-sm">
               <AlertCircle className="h-4 w-4 shrink-0" />
               {error}
             </div>
@@ -208,7 +212,7 @@ export const PinPromptModal = ({
             disabled={
               !pinComplete || status === 'verifying' || status === 'locked'
             }
-            className="bg-brand hover:bg-brand-dark/80 w-full rounded-xl py-3 text-sm font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-50"
+            className="w-full rounded-xl bg-brand py-3 font-semibold text-sm text-white transition hover:bg-brand-dark/80 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {status === 'verifying' ? (
               <span className="flex items-center justify-center gap-2">

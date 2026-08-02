@@ -1,20 +1,20 @@
 'use client';
 
+import { LogOut, Menu, X } from 'lucide-react';
+import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { logout } from '@/actions/auth';
+import { BrandButton } from '@/components/common/BrandButton';
+import { BrandLogo } from '@/components/common/BrandLogo';
 import {
+  CommonRoutes,
   type DashboardRoute,
   LandlordRoutes,
   TenantRoutes,
-  CommonRoutes,
 } from '@/config/dashboardRoutes';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { LogOut } from 'lucide-react';
-import { logout } from '@/actions/auth';
+import { useEscapeKey } from '@/hooks/useEscapeKey';
 import { cn } from '@/lib/utils';
-import { BrandLogo } from '@/components/common/BrandLogo';
-import { Menu, X } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 
 type userRole = 'tenant' | 'landlord';
 export const DashboardNavbar = ({
@@ -25,6 +25,8 @@ export const DashboardNavbar = ({
   const pathname = usePathname();
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
+
+  useEscapeKey(isOpen, () => setIsOpen(false));
 
   const isActive = (path: string) => pathname === path;
   const handleSignout = async () => {
@@ -41,7 +43,7 @@ export const DashboardNavbar = ({
         href={route.path}
         onClick={() => setIsOpen(false)}
         className={cn(
-          'group text-md font-secondary relative flex items-center gap-3 rounded-lg px-4 py-3 font-medium transition-all duration-200',
+          'group relative flex items-center gap-3 rounded-lg px-4 py-3 font-medium font-secondary text-md transition-all duration-200',
           active
             ? 'bg-primary/10 text-brand'
             : 'text-muted-foreground hover:bg-muted hover:text-foreground'
@@ -71,15 +73,17 @@ export const DashboardNavbar = ({
 
   return (
     <>
-      <div className="relative flex items-center justify-between border-b px-4 py-3 lg:hidden">
+      <div className="relative flex items-center justify-between border-b px-4 py-3 md:hidden">
         <BrandLogo isScrolled={true} />
-        <button onClick={() => setIsOpen(true)}>
-          <Menu size={22} />
-        </button>
+        <BrandButton
+          onClick={() => setIsOpen(true)}
+          leftIcon={<Menu size={22} />}
+        />
       </div>
       {isOpen && (
         <div
           onClick={() => setIsOpen(false)}
+          aria-hidden="true"
           className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm lg:hidden"
         />
       )}
@@ -87,19 +91,20 @@ export const DashboardNavbar = ({
       {/* Sidebar */}
       <aside
         className={cn(
-          'bg-background fixed top-0 left-0 z-50 h-screen w-64 transform border-r px-4 py-6 transition-transform duration-300',
+          'fixed top-0 left-0 z-50 h-screen w-64 transform border-r bg-background px-4 py-6 transition-transform duration-300',
           isOpen ? 'translate-x-0' : '-translate-x-full',
-          'lg:static lg:z-auto lg:translate-x-0'
+          'md:static md:z-auto md:translate-x-0'
         )}
       >
-        <div className="mb-6 flex items-center justify-between lg:hidden">
+        <div className="mb-6 flex items-center justify-between md:hidden">
           <BrandLogo isScrolled={true} />
-          <button onClick={() => setIsOpen(false)}>
-            <X size={22} />
-          </button>
+          <BrandButton
+            onClick={() => setIsOpen(false)}
+            leftIcon={<X size={22} />}
+          />
         </div>
 
-        <div className="mb-6 hidden lg:block">
+        <div className="mb-6 hidden md:block">
           <BrandLogo isScrolled={true} />
         </div>
 
@@ -110,14 +115,10 @@ export const DashboardNavbar = ({
           {CommonRoutes.map(renderRoute)}
         </nav>
 
-        <div className="bg-primary/10 absolute bottom-4 mt-auto flex w-[80%] flex-col gap-2 rounded-lg">
-          <button
-            onClick={handleSignout}
-            className="group text-md font-secondary hover:bg-muted hover:text-foreground flex items-center gap-3 rounded-lg px-4 py-3 font-medium transition-all duration-200"
-          >
-            <LogOut size={20} />
+        <div className="absolute bottom-4 mt-auto flex w-[80%] flex-col gap-2 rounded-lg bg-primary/10">
+          <BrandButton onClick={handleSignout} leftIcon={<LogOut size={22} />}>
             <span className="group-hover:text-foreground">Logout</span>
-          </button>
+          </BrandButton>
         </div>
       </aside>
     </>

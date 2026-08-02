@@ -2,20 +2,20 @@
 
 import { Menu } from 'lucide-react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import React from 'react';
+import { MobileMenu } from '@/components/common/MobileMenu';
+import { ProfileTracker } from '@/components/common/ProfileTracker';
+import { headerLinks } from '@/data/HeaderLinks';
+import { useHeaderVisibility } from '@/hooks/useHeaderVisibility';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
+import { useScroll } from '@/hooks/useScroll';
+import { useUserProfile } from '@/hooks/useUserProfile';
+import { cn } from '@/lib/utils';
+import { useMobileMenu } from '@/stores/useMobileMenu';
+import { BrandButton } from './BrandButton';
 import { BrandLoader } from './BrandLoader';
 import { BrandLogo } from './BrandLogo';
-import { useScroll } from '@/hooks/useScroll';
-import { cn } from '@/lib/utils';
-import { headerLinks } from '@/data/HeaderLinks';
-import { MobileMenu } from '@/components/common/MobileMenu';
-import { useMobileMenu } from '@/stores/useMobileMenu';
-import { useMediaQuery } from '@/hooks/useMediaQuery';
-import { useHeaderVisibility } from '@/hooks/useHeaderVisibility';
-import { usePathname } from 'next/navigation';
-import { useUserProfile } from '@/hooks/useUserProfile';
-import { BrandButton } from './BrandButton';
-import { ProfileTracker } from '@/components/common/ProfileTracker';
 
 export default function Header() {
   const { open: mobileMenuOpen, close, openMenu } = useMobileMenu();
@@ -37,8 +37,8 @@ export default function Header() {
           'fixed top-0 left-0 z-50 w-full transform transition-all duration-300',
           isVisible ? 'translate-y-0' : '-translate-y-full',
           scrolled
-            ? 'bg-white/70 backdrop-blur-md'
-            : 'text-brand bg-transparent'
+            ? 'bg-white/70 text-brand backdrop-blur-md hover:text-brand-black'
+            : 'bg-brand text-white'
         )}
       >
         <DesktopNav
@@ -72,7 +72,7 @@ const DesktopNav = ({
   pathname: string;
 }) => {
   const buttonClass =
-    ' text-zinc-900 hover:border-b hover:border-brand hover:text-brand text-base font-primary font-semibold transition-colors duration-300 ease-in-out';
+    ' text-zinc-900 hover:border-b hover:border-white hover:text-white text-base font-primary font-semibold transition-colors duration-300 ease-in-out';
 
   return (
     <nav className="hidden w-full items-center gap-4 px-10 py-7 lg:flex xl:mx-auto xl:max-w-310 xl:px-0">
@@ -89,8 +89,13 @@ const DesktopNav = ({
                   href={link.href}
                   className={cn(
                     buttonClass,
-                    isScrolled ? 'text-zinc-900' : 'text-white',
-                    isActive && 'border-brand border-b-2'
+                    isScrolled
+                      ? 'text-zinc-900 hover:border-brand hover:border-b-2 hover:text-brand'
+                      : 'text-white',
+                    isActive &&
+                      (isScrolled
+                        ? 'border-brand border-b-2'
+                        : 'border-white border-b-2')
                   )}
                 >
                   {link.name}
@@ -105,7 +110,15 @@ const DesktopNav = ({
             ) : isUserAuthenticated ? (
               <ProfileTracker isScrolled={isScrolled} />
             ) : (
-              <BrandButton asChild className="">
+              <BrandButton
+                asChild
+                className={cn(
+                  'bg-white text-zinc-900 hover:bg-zinc-900 hover:text-white',
+                  isScrolled
+                    ? 'bg-brand text-white hover:bg-zinc-900 hover:text-white'
+                    : 'bg-white text-zinc-900 hover:bg-zinc-900 hover:text-white'
+                )}
+              >
                 <Link href="/sign-in">Sign-in</Link>
               </BrandButton>
             )}

@@ -1,18 +1,21 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import { QueryProvider } from '@/providers/QueryProvider';
+import { Figtree, Manrope } from 'next/font/google';
 import { Toaster } from 'sonner';
-import { Cardo, Hanken_Grotesk } from 'next/font/google';
+import { QueryProvider } from '@/providers/QueryProvider';
 
-const cardo = Cardo({
-  variable: '--font-cardo',
-  weight: ['400', '700'],
+const manrope = Manrope({
+  variable: '--font-manrope',
+  weight: ['400', '500', '600', '700', '800'],
   subsets: ['latin'],
+  display: 'swap',
 });
 
-const hankenGrotesk = Hanken_Grotesk({
-  variable: '--font-geist-mono',
+const figtree = Figtree({
+  variable: '--font-figtree',
+  weight: ['400', '500', '600', '700'],
   subsets: ['latin'],
+  display: 'swap',
 });
 
 export const metadata: Metadata = {
@@ -29,7 +32,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${hankenGrotesk.variable} ${cardo.variable} antialiased`}
+        className={`${manrope.variable} ${figtree.variable} font-primary antialiased`}
       >
         <QueryProvider>{children}</QueryProvider>
         <Toaster position="bottom-right" richColors closeButton />

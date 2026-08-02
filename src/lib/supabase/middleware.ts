@@ -1,5 +1,5 @@
 import { createServerClient } from '@supabase/ssr';
-import { NextResponse, type NextRequest } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 import { hasPermission, type Role } from '@/lib/accessPolice';
 
 export const updateSession = async (request: NextRequest) => {
@@ -12,9 +12,9 @@ export const updateSession = async (request: NextRequest) => {
       cookies: {
         getAll: () => request.cookies.getAll(),
         setAll: cookiesToSet => {
-          cookiesToSet.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, options)
-          );
+          for (const { name, value, options } of cookiesToSet) {
+            response.cookies.set(name, value, options);
+          }
         },
       },
     }
@@ -74,11 +74,9 @@ export const updateSession = async (request: NextRequest) => {
 
   const role = userRole?.role as Role | undefined;
 
-  const isAdmin =
-    role &&
-    (hasPermission(role, 'admin:access') ||
-      hasPermission(role, 'superAdmin:access') ||
-      hasPermission(role, 'administrator:access'));
+  const normalizedRole = role?.trim();
+
+  const isAdmin = hasPermission(normalizedRole as Role, 'admin:access');
 
   // Enforce onboarding
   if (
@@ -111,6 +109,7 @@ export const updateSession = async (request: NextRequest) => {
 
     const url = request.nextUrl.clone();
     url.pathname = isAdmin ? '/admin' : '/dashboard';
+
     return NextResponse.redirect(url);
   }
 
@@ -118,6 +117,12 @@ export const updateSession = async (request: NextRequest) => {
   if (pathname.startsWith('/admin') && !isAdmin) {
     const url = request.nextUrl.clone();
     url.pathname = '/dashboard';
+    return NextResponse.redirect(url);
+  }
+
+  if (pathname.startsWith('/dashboard') && isAdmin) {
+    const url = request.nextUrl.clone();
+    url.pathname = '/admin';
     return NextResponse.redirect(url);
   }
 

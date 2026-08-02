@@ -1,23 +1,23 @@
 'use client';
 
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Eye, EyeOff, Loader2, Lock, Undo2 } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Eye, EyeOff, Loader2, Undo2 } from 'lucide-react';
-import {
-  resetPasswordSchema,
-  type ResetPasswordFormData,
-} from '@/lib/schemas/auth';
+import { toast } from 'sonner';
+import { resetPassword } from '@/actions/auth';
+import AnimatedWrapper from '@/components/common/AnimatedWrapper';
+import { BrandInput } from '@/components/common/BrandInput';
 import { Card } from '@/components/ui/card';
 import { Form } from '@/components/ui/form';
 import { getErrorMessage } from '@/helpers/error.helpers';
-import { toast } from 'sonner';
-import { resetPassword } from '@/actions/auth';
-import { useRouter } from 'next/navigation';
+import {
+  type ResetPasswordFormData,
+  resetPasswordSchema,
+} from '@/lib/schemas/auth';
 import { BrandButton } from '../common/BrandButton';
-import { BrandInput } from '@/components/common/BrandInput';
-import AnimatedWrapper from '@/components/common/AnimatedWrapper';
 
 export const ResetPasswordForm = ({ email }: { email: string }) => {
   const [showPassword, setShowPassword] = useState(false);
@@ -65,12 +65,12 @@ export const ResetPasswordForm = ({ email }: { email: string }) => {
           <div className="mx-auto flex justify-center">
             <Link
               href="/"
-              className="font-primary hover:text-brand absolute top-5 left-3 flex cursor-pointer items-center rounded-full bg-white/90 px-4 py-2 text-center text-sm font-semibold italic shadow lg:hidden"
+              className="absolute top-5 left-3 flex cursor-pointer items-center rounded-full bg-white/90 px-4 py-2 text-center font-primary font-semibold text-sm italic shadow hover:text-brand lg:hidden"
             >
               <Undo2 className="mr-2 size-4" />
               HomeSphere
             </Link>
-            <h1 className="font-secondary mt-10 mb-1 text-center text-3xl font-bold">
+            <h1 className="mt-10 mb-1 text-center font-bold font-secondary text-3xl">
               Reset Your Account Password!
             </h1>
           </div>
@@ -86,12 +86,14 @@ export const ResetPasswordForm = ({ email }: { email: string }) => {
                   label="Your Password"
                   type={showPassword ? 'text' : 'password'}
                   placeholder="*******"
+                  required
+                  leftElement={<Lock className="size-4 text-gray-400" />}
                   formRef={form}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="text-muted-foreground absolute top-1/2 right-3 -translate-y-1/2"
+                  className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground"
                 >
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
@@ -103,12 +105,14 @@ export const ResetPasswordForm = ({ email }: { email: string }) => {
                   label="Confirm Password"
                   type={showConfirmPassword ? 'text' : 'password'}
                   placeholder="*******"
+                  required
+                  leftElement={<Lock className="size-4 text-gray-400" />}
                   formRef={form}
                 />
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="text-muted-foreground absolute top-1/2 right-3 -translate-y-1/2"
+                  className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground"
                 >
                   {showConfirmPassword ? (
                     <EyeOff size={18} />
@@ -118,15 +122,14 @@ export const ResetPasswordForm = ({ email }: { email: string }) => {
                 </button>
               </div>
 
-              <BrandButton type="submit" className="mx-auto w-[70%]">
-                {resetting ? (
-                  <>
-                    <Loader2 className="mr-2 size-4 animate-spin" />
-                    Resetting Password...
-                  </>
-                ) : (
-                  'Reset Password'
-                )}
+              <BrandButton
+                type="submit"
+                className="mx-auto w-[70%]"
+                leftIcon={
+                  resetting ? <Loader2 className="size-4 animate-spin" /> : null
+                }
+              >
+                {resetting ? <>Resetting Password...</> : 'Reset Password'}
               </BrandButton>
             </form>
           </Form>

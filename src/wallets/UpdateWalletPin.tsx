@@ -1,23 +1,23 @@
 'use client';
 
+import { Loader2 } from 'lucide-react';
+import { useState, useTransition } from 'react';
+import { toast } from 'sonner';
+import { updateWalletPin } from '@/actions/wallets';
+import { BrandButton } from '@/components/common/BrandButton';
+import { BrandKeyPad } from '@/components/common/BrandKeyPad';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { BrandButton } from '@/components/common/BrandButton';
-import { useState, useTransition } from 'react';
-import { updateWalletPin } from '@/actions/wallets';
 import {
   InputOTP,
   InputOTPGroup,
   InputOTPSlot,
 } from '@/components/ui/input-otp';
-import { toast } from 'sonner';
 import { getErrorMessage } from '@/helpers/error.helpers';
-import { Loader2 } from 'lucide-react';
-import { BrandKeyPad } from '@/components/common/BrandKeyPad';
 import { useInvalidateWallet } from '@/hooks/Useinvalidatewallet';
 
 type Step = 'old' | 'new';
@@ -149,7 +149,7 @@ export const UpdateWalletPin = ({
             <BrandButton
               onClick={handleContinue}
               disabled={isUpdating || activePin.length !== 4}
-              className="bg-brand hover:brand-dark/80 w-full text-white"
+              className="hover:brand-dark/80 w-full bg-brand text-white"
             >
               {isUpdating ? (
                 <>

@@ -1,25 +1,27 @@
 'use client';
 
-import { useState, useTransition } from 'react';
-import { useForm, UseFormReturn } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { onboardingSchema, OnboardingValues } from '@/lib/schemas/onboarding';
-import { Card } from '@/components/ui/card';
-import { cn } from '@/lib/utils';
-import { Form } from '@/components/ui/form';
+import { Loader2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useState, useTransition } from 'react';
+import { type UseFormReturn, useForm } from 'react-hook-form';
+import { toast } from 'sonner';
 import { completeOnboarding } from '@/actions/auth';
+import AnimatedWrapper from '@/components/common/AnimatedWrapper';
 import { BrandButton } from '@/components/common/BrandButton';
 import { If } from '@/components/common/If';
-
-import RoleStep from './RoleStep';
+import { Card } from '@/components/ui/card';
+import { Form } from '@/components/ui/form';
+import { getErrorMessage } from '@/helpers/error.helpers';
+import {
+  type OnboardingValues,
+  onboardingSchema,
+} from '@/lib/schemas/onboarding';
+import { cn } from '@/lib/utils';
+import KycCapture from './KycCapture';
 import PersonalStep from './PersonalStep';
 import ProfileStep from './ProfileStep';
-import KycCapture from './KycCapture';
-import { toast } from 'sonner';
-import AnimatedWrapper from '@/components/common/AnimatedWrapper';
-import { getErrorMessage } from '@/helpers/error.helpers';
-import { useRouter } from 'next/navigation';
-import { Loader2 } from 'lucide-react';
+import RoleStep from './RoleStep';
 
 type Steps = {
   title: string;
@@ -148,11 +150,11 @@ export const OnboardingForm = () => {
             })}
           </div>
 
-          <h1 className="font-primary mt-7 text-center text-2xl font-bold">
+          <h1 className="mt-7 text-center font-bold font-primary text-2xl">
             Complete your Onboarding
           </h1>
 
-          <p className="text-muted-foreground mt-5 text-sm">
+          <p className="mt-5 text-muted-foreground text-sm">
             Step {step + 1} of {steps.length}
           </p>
         </div>
@@ -165,17 +167,13 @@ export const OnboardingForm = () => {
               <footer className="fixed bottom-7 w-full max-w-xl border-t">
                 <div className="mt-4 flex justify-between">
                   <If cond={step > 0}>
-                    <BrandButton
-                      type="button"
-                      brandVariant="tertiary"
-                      onClick={back}
-                    >
+                    <BrandButton type="button" variant="ghost" onClick={back}>
                       Back
                     </BrandButton>
                   </If>
                   <BrandButton
                     type={isLastStep ? 'submit' : 'button'}
-                    brandVariant="tertiary"
+                    variant="ghost"
                     onClick={handleNext}
                   >
                     {buttonText}

@@ -1,18 +1,20 @@
 'use client';
 
+import consola from 'consola';
+import { CheckCircle2, CreditCard, Loader2, Wallet } from 'lucide-react';
 import { useState } from 'react';
-import { Wallet, CreditCard, Loader2, CheckCircle2 } from 'lucide-react';
-import { useInvalidateWallet } from '@/hooks/Useinvalidatewallet';
-import { PAYSTACK_PUBLIC_KEY } from '@/config/constants';
+import { BrandButton } from '@/components/common/BrandButton';
+import { BrandInput, type FormValue } from '@/components/common/BrandInput';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { PAYSTACK_PUBLIC_KEY } from '@/config/constants';
 import { formatCurrency } from '@/helpers/currency.helpers';
-import consola from 'consola';
 import { getErrorMessage } from '@/helpers/error.helpers';
+import { useInvalidateWallet } from '@/hooks/Useinvalidatewallet';
 
 interface TopUpModalProps {
   isOpen: boolean;
@@ -95,7 +97,7 @@ export function TopUpModal({ isOpen, onClose, userEmail }: TopUpModalProps) {
   const { invalidate } = useInvalidateWallet();
 
   const numericAmount = parseFloat(amount);
-  const isValid = !isNaN(numericAmount) && numericAmount >= 100;
+  const isValid = !Number.isNaN(numericAmount) && numericAmount >= 100;
 
   function handleOpenChange(open: boolean) {
     if (!open && !dialogHidden) {
@@ -170,11 +172,11 @@ export function TopUpModal({ isOpen, onClose, userEmail }: TopUpModalProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <DialogContent className="font-secondary w-full max-w-md rounded-2xl p-0">
+      <DialogContent className="w-full max-w-md rounded-2xl p-0 font-secondary">
         <DialogHeader className="border-b px-6 py-4">
           <div className="flex items-center gap-2">
             <Wallet className="h-5 w-5 text-emerald-600" />
-            <DialogTitle className="text-lg font-semibold text-gray-900">
+            <DialogTitle className="font-semibold text-gray-900 text-lg">
               Top Up Wallet
             </DialogTitle>
           </div>
@@ -184,86 +186,87 @@ export function TopUpModal({ isOpen, onClose, userEmail }: TopUpModalProps) {
           {step === 'success' ? (
             <div className="flex flex-col items-center gap-3 py-8 text-center">
               <CheckCircle2 className="h-14 w-14 text-emerald-500" />
-              <p className="text-lg font-semibold text-gray-800">
+              <p className="font-semibold text-gray-800 text-lg">
                 Wallet Topped Up!
               </p>
-              <p className="text-sm text-gray-500">
+              <p className="text-gray-500 text-sm">
                 {formatCurrency(numericAmount)} has been added to your wallet.
               </p>
             </div>
           ) : (
             <>
               <div>
-                <p className="mb-2 text-sm font-medium text-gray-600">
+                <p className="mb-2 font-medium text-gray-600 text-sm">
                   Quick amounts
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {QUICK_AMOUNTS.map(a => (
-                    <button
+                    <BrandButton
                       key={a}
                       onClick={() => setAmount(String(a))}
-                      className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition ${
+                      className={`rounded-lg border px-3 py-1.5 font-medium text-sm transition ${
                         amount === String(a)
-                          ? 'bg-brand-dark border-emerald-500 text-white'
-                          : 'hover:border-brand-light border-gray-200 text-gray-600'
+                          ? 'border-emerald-500 bg-brand-dark text-white'
+                          : 'border-gray-200 text-gray-600 hover:border-brand-light'
                       }`}
                     >
                       {formatCurrency(a)}
-                    </button>
+                    </BrandButton>
                   ))}
                 </div>
               </div>
 
               <div>
-                <label className="font-secondary mb-1.5 block text-sm font-medium text-gray-700">
+                <div className="mb-1.5 block font-medium font-secondary text-gray-700 text-sm">
                   Amount (₦)
-                </label>
+                </div>
                 <div className="relative">
                   <span className="absolute top-1/2 left-3 -translate-y-1/2 font-medium text-gray-400">
                     ₦
                   </span>
-                  <input
+                  <BrandInput
                     type="number"
+                    name="amount"
                     min={100}
                     placeholder="Enter amount"
                     value={amount}
-                    onChange={e => setAmount(e.target.value)}
-                    className="w-full rounded-xl border border-gray-200 py-3 pr-4 pl-7 text-base focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 focus:outline-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                    onChange={(value: FormValue) => {
+                      const rawValue = value?.toString() ?? '';
+                      setAmount(rawValue);
+                    }}
                   />
                 </div>
-                <p className="mt-1 text-xs text-gray-400">
+                <p className="mt-1 text-gray-400 text-xs">
                   Minimum top-up: ₦100
                 </p>
               </div>
 
               {error && (
-                <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">
+                <p className="rounded-lg bg-red-50 px-3 py-2 text-red-600 text-sm">
                   {error}
                 </p>
               )}
 
               <div className="flex items-center gap-2 rounded-xl bg-gray-50 px-4 py-3">
                 <CreditCard className="h-4 w-4 shrink-0 text-gray-400" />
-                <p className="text-xs text-gray-500">
+                <p className="text-gray-500 text-xs">
                   Secure payment via Paystack — card, bank transfer, or USSD
                   accepted.
                 </p>
               </div>
 
-              <button
+              <BrandButton
                 onClick={handleTopUp}
                 disabled={!isValid || step === 'processing'}
-                className="hover:bg-brand-dark/80 bg-brand flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-brand py-3 font-semibold text-sm text-white transition hover:bg-brand-dark/80 disabled:cursor-not-allowed disabled:opacity-50"
+                leftIcon={<Loader2 className="h-4 w-4 animate-spin" />}
               >
                 {step === 'processing' ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Opening payment...
-                  </>
+                  <>Opening payment...</>
                 ) : (
                   `Top Up ${isValid ? formatCurrency(numericAmount) : '₦0'}`
                 )}
-              </button>
+              </BrandButton>
             </>
           )}
         </div>

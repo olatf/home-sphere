@@ -1,6 +1,6 @@
+import crypto from 'node:crypto';
 import { NextResponse } from 'next/server';
 import { getSmileBaseUrl } from '@/lib/smile/config';
-import crypto from 'crypto';
 
 interface CheckStatusRequest {
   userId: string;
