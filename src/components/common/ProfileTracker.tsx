@@ -12,8 +12,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { safeStr } from '@/helpers/data.helpers';
-import { useUserProfile } from '@/hooks/useUserProfile';
 import { capitalizeWords } from '@/helpers/formatters.helpers';
+import { useUserProfile } from '@/hooks/useUserProfile';
 import { cn } from '@/lib/utils';
 import { If } from './If';
 
@@ -46,7 +46,7 @@ export const ProfileTracker = ({ isScrolled }: { isScrolled?: boolean }) => {
             )}
           >
             <div className="text-left">
-              <p className="font-secondary leading-none font-normal">
+              <p className="font-normal font-secondary leading-none">
                 Hi {safeStr(profile?.full_name)}
               </p>
             </div>
@@ -61,16 +61,16 @@ export const ProfileTracker = ({ isScrolled }: { isScrolled?: boolean }) => {
 
           <DropdownMenuContent
             sideOffset={5}
-            className="font-secondary min-w-[320px] rounded-lg border bg-white p-1 shadow-lg"
+            className="min-w-[320px] rounded-lg border bg-white p-1 font-secondary shadow-lg"
           >
             <Link href="/account">
-              <DropdownMenuItem className="text-md cursor-pointer">
+              <DropdownMenuItem className="cursor-pointer text-md">
                 My Account
               </DropdownMenuItem>
             </Link>
             <DropdownMenuItem
               onClick={handleLogout}
-              className="text-md cursor-pointer"
+              className="cursor-pointer text-md"
             >
               Logout
             </DropdownMenuItem>
@@ -86,11 +86,11 @@ export const ProfileTracker = ({ isScrolled }: { isScrolled?: boolean }) => {
               className={cn(
                 'flex items-center justify-center gap-3 rounded-full px-4 py-3 text-base text-white',
                 buttonClass,
-                isScrolled ? 'text-brand bg-white' : 'bg-transparent text-white'
+                isScrolled ? 'bg-white text-brand' : 'bg-transparent text-white'
               )}
             >
               <div className="text-left">
-                <p className="font-secondary leading-none font-normal">
+                <p className="font-normal font-secondary leading-none">
                   Hi {safeStr(profile?.full_name)}
                 </p>
               </div>
@@ -105,20 +105,20 @@ export const ProfileTracker = ({ isScrolled }: { isScrolled?: boolean }) => {
           </DropdownMenuTrigger>
 
           <DropdownMenuContent
-            className="font-secondary w-56 rounded-lg border bg-white p-2 shadow-lg"
+            className="w-56 rounded-lg border bg-white p-2 font-secondary shadow-lg"
             sideOffset={8}
           >
             <div className="mb-2 cursor-pointer border-b px-3 py-2">
-              <p className="font-primary text-base font-normal text-zinc-900">
+              <p className="font-normal font-primary text-base text-zinc-900">
                 {safeStr(profile?.full_name)}
               </p>
 
-              <p className="font-secondary text-sm font-semibold">
+              <p className="font-secondary font-semibold text-sm">
                 {' '}
                 {safeStr(profile?.email)}
               </p>
               <If cond={Boolean(profile?.role)}>
-                <p className="text-sm text-gray-600">
+                <p className="text-gray-600 text-sm">
                   Role: {capitalizeWords(safeStr(profile?.role))}
                 </p>
               </If>

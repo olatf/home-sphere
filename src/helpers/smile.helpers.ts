@@ -1,6 +1,6 @@
-import * as packageJson from '../../package.json';
 import { sidServerMapping } from '@/config/smile.config';
-import { PartnerParams } from '@/lib/smile/config';
+import type { PartnerParams } from '@/lib/smile/config';
+import * as packageJson from '../../package.json';
 
 /**
  * Converts a numeric key to a smile server URI, or

@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react';
-import { DashboardShell } from '@/dashboards/DashboardShell';
-import { QueryProvider } from '@/providers/QueryProvider';
 import { getUserProfile } from '@/actions/auth';
+import { DashboardShell } from '@/dashboards/DashboardShell';
 import { PaymentModalWrapper } from '@/dashboards/PaymentModalWrapper';
+import { QueryProvider } from '@/providers/QueryProvider';
 export default async function DashboardLayout({
   children,
 }: Readonly<{ children: ReactNode }>) {

@@ -1,7 +1,7 @@
-import { UseFormReturn } from 'react-hook-form';
-import { OnboardingValues } from '@/lib/schemas/onboarding';
+import type { UseFormReturn } from 'react-hook-form';
 import { BrandInput } from '@/components/common/BrandInput';
 import { BrandRadioSelectors } from '@/components/common/BrandRadioSelectors';
+import type { OnboardingValues } from '@/lib/schemas/onboarding';
 
 export default function ProfileStep({
   form,
@@ -11,7 +11,7 @@ export default function ProfileStep({
   return (
     <div className="grid gap-2 space-y-3">
       <div className="space-y-4">
-        <p className="font-secondary text-base font-semibold">
+        <p className="font-secondary font-semibold text-base">
           Document Type <span className="text-red-900">*</span>
         </p>
         <BrandRadioSelectors<OnboardingValues['idType']>

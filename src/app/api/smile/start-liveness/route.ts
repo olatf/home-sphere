@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { getSmileBaseUrl } from '@/lib/smile/config';
 import { SMILE_CALLBACK_URL_PATH } from '@/config/constants';
+import { getSmileBaseUrl } from '@/lib/smile/config';
 
 export async function POST(req: Request) {
   const { userId } = await req.json();

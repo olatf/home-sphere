@@ -1,5 +1,5 @@
-import { safeStr } from '@/helpers/data.helpers';
 import Image from 'next/image';
+import { safeStr } from '@/helpers/data.helpers';
 
 interface BrandAvatarProps {
   size?: number;
@@ -40,7 +40,12 @@ export const BrandAvatar = ({
       className="relative flex items-center justify-center"
     >
       {verificationSteps && (
-        <svg className="absolute inset-0 -rotate-90" width={size} height={size}>
+        <svg
+          className="absolute inset-0 -rotate-90"
+          width={size}
+          height={size}
+          aria-label="Verification Progress"
+        >
           <circle
             cx={size / 2}
             cy={size / 2}
@@ -63,7 +68,7 @@ export const BrandAvatar = ({
       )}
 
       <div
-        className="bg-brand-light relative flex items-center justify-center overflow-hidden rounded-full border-2 border-white"
+        className="relative flex items-center justify-center overflow-hidden rounded-full border-2 border-white bg-brand-light"
         style={{
           width: size - 6,
           height: size - 6,

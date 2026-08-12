@@ -1,19 +1,19 @@
 'use client';
 
-import { useState, useTransition } from 'react';
-import { verifyOtp, resendOtp } from '@/actions/auth';
-import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
+import { useState, useTransition } from 'react';
+import { toast } from 'sonner';
+import { resendOtp, verifyOtp } from '@/actions/auth';
+import { BrandButton } from '@/components/common/BrandButton';
 import { Button } from '@/components/ui/button';
-import { useOnboardingStore } from '@/stores/useOnboardingStore';
 import {
   InputOTP,
   InputOTPGroup,
   InputOTPSlot,
 } from '@/components/ui/input-otp';
-import AnimatedWrapper from '../common/AnimatedWrapper';
-import { BrandButton } from '@/components/common/BrandButton';
 import { getErrorMessage } from '@/helpers/error.helpers';
+import { useOnboardingStore } from '@/stores/useOnboardingStore';
+import AnimatedWrapper from '../common/AnimatedWrapper';
 
 interface VerifyOtpFormProps {
   email: string;
@@ -94,10 +94,10 @@ export const VerifyOtpForm = ({ mode, email }: VerifyOtpFormProps) => {
     <section className="mx-auto flex min-h-[85vh] w-full max-w-3xl flex-col justify-center py-14">
       <AnimatedWrapper type="slideInRight">
         <div className="my-8 text-center">
-          <h1 className="font-secondary text-[40px] leading-[1.2] font-normal">
+          <h1 className="font-normal font-secondary text-[40px] leading-[1.2]">
             Verify OTP
           </h1>
-          <div className="font-secondary my-9 text-center text-lg leading-normal font-medium">
+          <div className="my-9 text-center font-medium font-secondary text-lg leading-normal">
             We sent a code to{' '}
             <span className="text-brand-primary-light">{email}</span>
           </div>
@@ -132,7 +132,7 @@ export const VerifyOtpForm = ({ mode, email }: VerifyOtpFormProps) => {
               {isVerifying ? 'Verifying...' : 'Verify OTP'}
             </BrandButton>
 
-            <div className="flex items-center gap-2 text-sm text-[#535A63]">
+            <div className="flex items-center gap-2 text-[#535A63] text-sm">
               <span className="font-secondary">
                 Didn&apos;t receive a code?
               </span>
@@ -141,7 +141,7 @@ export const VerifyOtpForm = ({ mode, email }: VerifyOtpFormProps) => {
                 onClick={handleResend}
                 disabled={isResending}
                 variant="ghost"
-                className="font-secondary text-brand-primary-light h-auto p-0 text-base font-medium underline-offset-2 hover:underline"
+                className="h-auto p-0 font-medium font-secondary text-base text-brand-primary-light underline-offset-2 hover:underline"
               >
                 {isResending ? 'Resending...' : 'Resend'}
               </Button>

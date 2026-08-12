@@ -1,21 +1,19 @@
+import { OverviewDashboard } from '@/dashboards';
+import { PropertyHero } from '@/property';
 import {
-  HeroSection,
-  PropertySummary,
-  AboutUsSection,
-  TeamSection,
-  TestimonialsSection,
   NewsletterSection,
+  TestimonialsSection,
+  WhyChooseUsSection,
 } from '@/sections/home';
 
-export default function MarketingLanding() {
+export default function HomePage() {
   return (
-    <main className="min-h-screen bg-gray-50">
-      <HeroSection />
-      <PropertySummary />
-      <AboutUsSection />
-      <TeamSection />
+    <div className="min-h-screen bg-gray-50">
+      <PropertyHero />
+      <OverviewDashboard />
+      <WhyChooseUsSection />
       <TestimonialsSection />
       <NewsletterSection />
-    </main>
+    </div>
   );
 }

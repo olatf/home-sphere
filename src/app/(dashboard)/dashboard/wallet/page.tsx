@@ -1,8 +1,8 @@
 import {
-  WalletBalanceCard,
   SummaryChart,
   WalletActions,
   WalletActivities,
+  WalletBalanceCard,
 } from '@/wallets';
 
 export default function WalletPage() {

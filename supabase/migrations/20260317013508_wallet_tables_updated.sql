@@ -1,6 +1,6 @@
 create table public.wallets(
     id uuid primary key default uuid_generate_v4(),
-    user_id uuid references auth.users(id) on delete cascade NOT NULL,
+    user_id uuid references user_profiles(id) on delete cascade NOT NULL,
     balance numeric(12, 2) default 0,
     wallet_id text default null,
     total_withdrawal numeric(12, 2) default 0,
@@ -47,7 +47,7 @@ USING (
 
 
 create table public.wallet_pins (
-  user_id uuid primary key references auth.users(id) on delete cascade,
+  user_id uuid primary key references user_profiles(id) on delete cascade,
   pin_hash text not null,
   created_at timestamptz default now(),
   updated_at timestamptz default now()
@@ -82,6 +82,14 @@ USING (
   user_id = auth.uid()
 );
 
+CREATE POLICY "Users can INSERT own wallet pin"
+ON public.wallet_pins
+FOR INSERT
+TO authenticated
+WITH CHECK(
+  user_id = auth.uid()
+);
+
 
 alter table wallets
 add constraint wallets_wallet_id_unique unique (wallet_id);
@@ -97,7 +105,9 @@ CREATE TYPE public.transaction_types_enum AS ENUM (
   'purchase_payment',
   'admin_transfer',
   'landlord_payout',
-  'withdrawal'
+  'withdrawal',
+  'transfer_in',
+  'transfer_out'
 );
 
 ALTER TYPE public.transaction_types_enum OWNER TO "postgres";
@@ -186,7 +196,7 @@ USING (
 
 create table public.withdrawals (
   id uuid primary key default uuid_generate_v4(),
-  user_id uuid,
+  user_id uuid references user_profiles(id) on delete cascade,
   amount numeric,
   bank_code text,
   account_number text,
@@ -238,33 +248,6 @@ TO authenticated
 USING (
   (public.is_admin())
 );
-
-
-
-create or replace function create_wallet()
-returns trigger
-language plpgsql
-security definer
-set search_path = public
-as $$
-declare
-  unique_wallet_id text;
-begin
-
-  unique_wallet_id :=
-    'HMS-' || upper(substring(extensions.gen_random_uuid()::text from 1 for 8));
-
-    insert into wallets(user_id, wallet_id)
-    values (new.id, unique_wallet_id);
-
-    return new;
-end;
-$$;
-
-create trigger create_wallet_trigger
-after insert on auth.users
-for each row execute procedure create_wallet();
-
 
 create or replace function transfer_wallet_funds(
  sender uuid,

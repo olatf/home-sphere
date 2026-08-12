@@ -1,6 +1,18 @@
 'use client';
 
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Loader2 } from 'lucide-react';
 import { Fragment, useEffect, useState, useTransition } from 'react';
+import { FormProvider, useForm } from 'react-hook-form';
+import { toast } from 'sonner';
+import { boolean, z } from 'zod';
+import { getSignedUrl } from '@/actions/uploadFile';
+import { handleDocumentSubmit } from '@/actions/Verification';
+import { BrandButton } from '@/components/common/BrandButton';
+import { BrandImageEditor } from '@/components/common/BrandImageEditor';
+import { BrandLoader } from '@/components/common/BrandLoader';
+import { BrandRadioSelectors } from '@/components/common/BrandRadioSelectors';
+import { If } from '@/components/common/If';
 import {
   Dialog,
   DialogContent,
@@ -8,22 +20,10 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Drawer, DrawerContent, DrawerHeader } from '@/components/ui/drawer';
-import { useForm, FormProvider } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { VerifyLive } from './VerifyLive';
-import { useUserProfile } from '@/hooks/useUserProfile';
-import { getSignedDocUrl, handleDocumentSubmit } from '@/actions/Verification';
-import { If } from '@/components/common/If';
-import { BrandButton } from '@/components/common/BrandButton';
-import { useMediaQuery } from '@/hooks/useMediaQuery';
-import { BrandImageEditor } from '@/components/common/BrandImageEditor';
-import { BrandLoader } from '@/components/common/BrandLoader';
-import { boolean } from 'zod';
-import { toast } from 'sonner';
-import { Loader2 } from 'lucide-react';
-import { z } from 'zod';
-import { BrandRadioSelectors } from '@/components/common/BrandRadioSelectors';
 import { getErrorMessage } from '@/helpers/error.helpers';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
+import { useUserProfile } from '@/hooks/useUserProfile';
+import { VerifyLive } from './VerifyLive';
 
 interface Props {
   open: boolean;
@@ -72,13 +72,13 @@ export const VerificationModal = ({ open, onClose, type, refresh }: Props) => {
     const fetchSignedUrl = () => {
       startTransition(async () => {
         try {
-          const result = await getSignedDocUrl(
+          const result = await getSignedUrl(
             profile.verification_img,
             'verification-documents',
             60 * 10
           );
 
-          if (result.success) {
+          if (result.url) {
             setSignedUrl(result.url);
           }
         } catch (err) {
@@ -88,7 +88,7 @@ export const VerificationModal = ({ open, onClose, type, refresh }: Props) => {
     };
 
     fetchSignedUrl();
-  }, [open, type, profile?.verification_img, startTransition]);
+  }, [open, type, profile?.verification_img]);
 
   const onSubmit = async (values: DocumentFormValues) => {
     if (!values.documents) return;
@@ -106,12 +106,12 @@ export const VerificationModal = ({ open, onClose, type, refresh }: Props) => {
       }
 
       if (result?.success && result.filePath) {
-        const signed = await getSignedDocUrl(
+        const signed = await getSignedUrl(
           result.filePath,
           'verification-documents'
         );
 
-        if (signed.success) {
+        if (signed.url) {
           setSignedUrl(signed.url);
         }
         toast.success('Document uploaded successfully!');
@@ -125,7 +125,7 @@ export const VerificationModal = ({ open, onClose, type, refresh }: Props) => {
     <FormProvider {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 p-4">
         <div>
-          <p className="font-secondary text-base font-semibold">
+          <p className="font-secondary font-semibold text-base">
             Document Type
           </p>
           <BrandRadioSelectors<DocumentFormValues['idType']>
@@ -167,7 +167,7 @@ export const VerificationModal = ({ open, onClose, type, refresh }: Props) => {
   const LiveContent = (
     <div className="p-4">
       {!boolean ? (
-        <div className="text-center text-sm text-gray-500">
+        <div className="text-center text-gray-500 text-sm">
           <BrandLoader />
           Preparing verification...
         </div>

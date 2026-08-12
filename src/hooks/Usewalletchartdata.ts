@@ -25,6 +25,9 @@ export interface ChartTotals {
   withdrawals: number;
   rent_payments: number;
   inspection_payments: number;
+  landlord_payouts: number;
+  admin_transfers_in: number;
+  admin_transfers_out: number;
   purchase_payments: number;
   transfers_out: number;
   transfers_in: number;

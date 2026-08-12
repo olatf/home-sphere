@@ -1,24 +1,24 @@
 'use client';
 
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Eye, EyeOff, Loader2, Lock, Undo2, User } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Eye, EyeOff, Loader2, Undo2 } from 'lucide-react';
-import {
-  setPasswordSchema,
-  type SetPasswordFormValues,
-} from '@/lib/schemas/auth';
-import { useOnboardingStore } from '@/stores/useOnboardingStore';
+import { toast } from 'sonner';
+import { completeProfile } from '@/actions/auth';
+import AnimatedWrapper from '@/components/common/AnimatedWrapper';
+import { BrandInput } from '@/components/common/BrandInput';
 import { Card } from '@/components/ui/card';
 import { Form } from '@/components/ui/form';
 import { getErrorMessage } from '@/helpers/error.helpers';
-import { toast } from 'sonner';
-import { completeProfile } from '@/actions/auth';
-import { useRouter } from 'next/navigation';
+import {
+  type SetPasswordFormValues,
+  setPasswordSchema,
+} from '@/lib/schemas/auth';
+import { useOnboardingStore } from '@/stores/useOnboardingStore';
 import { BrandButton } from '../common/BrandButton';
-import { BrandInput } from '@/components/common/BrandInput';
-import AnimatedWrapper from '@/components/common/AnimatedWrapper';
 
 export const CompleteProfileForm = ({ email }: { email: string }) => {
   const [showPassword, setShowPassword] = useState(false);
@@ -70,12 +70,12 @@ export const CompleteProfileForm = ({ email }: { email: string }) => {
           <div className="mx-auto flex justify-center">
             <Link
               href="/"
-              className="font-primary hover:text-brand absolute top-5 left-3 flex cursor-pointer items-center rounded-full bg-white/90 px-4 py-2 text-center text-sm font-semibold italic shadow lg:hidden"
+              className="absolute top-5 left-3 flex cursor-pointer items-center rounded-full bg-white/90 px-4 py-2 text-center font-primary font-semibold text-sm italic shadow hover:text-brand lg:hidden"
             >
               <Undo2 className="mr-2 size-4" />
               HomeSphere
             </Link>
-            <h1 className="font-secondary mt-10 mb-1 text-center text-3xl font-bold">
+            <h1 className="mt-10 mb-1 text-center font-bold font-secondary text-3xl">
               Set Your Account Password!
             </h1>
           </div>
@@ -89,6 +89,8 @@ export const CompleteProfileForm = ({ email }: { email: string }) => {
                 name="full_name"
                 label="Your Full Name"
                 type="text"
+                required
+                leftElement={<User className="size-4 text-gray-400" />}
                 placeholder="John Doe"
                 formRef={form}
               />
@@ -99,15 +101,19 @@ export const CompleteProfileForm = ({ email }: { email: string }) => {
                   label="Your Password"
                   type={showPassword ? 'text' : 'password'}
                   placeholder="*******"
+                  required
+                  leftElement={<Lock className="size-4 text-gray-400" />}
                   formRef={form}
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="text-muted-foreground absolute top-1/2 right-3 -translate-y-1/2"
-                >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
+                <div className="relative float-right">
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute -top-4 right-3 -translate-y-1/2 text-muted-foreground"
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
               </div>
 
               <div className="relative">
@@ -118,17 +124,19 @@ export const CompleteProfileForm = ({ email }: { email: string }) => {
                   placeholder="*******"
                   formRef={form}
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="text-muted-foreground absolute top-1/2 right-3 -translate-y-1/2"
-                >
-                  {showConfirmPassword ? (
-                    <EyeOff size={18} />
-                  ) : (
-                    <Eye size={18} />
-                  )}
-                </button>
+                <div className="relative float-right">
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute -top-4 right-3 -translate-y-1/2 text-muted-foreground"
+                  >
+                    {showConfirmPassword ? (
+                      <EyeOff size={18} />
+                    ) : (
+                      <Eye size={18} />
+                    )}
+                  </button>
+                </div>
               </div>
 
               <BrandButton type="submit" className="mx-auto w-[70%]">

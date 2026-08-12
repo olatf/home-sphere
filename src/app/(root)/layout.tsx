@@ -1,6 +1,6 @@
-import Header from '@/components/common/Header';
-import Footer from '@/components/common/Footer';
 import BackToTop from '@/components/common/Back2top';
+import Footer from '@/components/common/Footer';
+import Header from '@/components/common/Header';
 
 export default function RootLayout({
   children,
@@ -10,8 +10,7 @@ export default function RootLayout({
   return (
     <div>
       <Header />
-      {/* @to-do: try mt-32 */}
-      <main className="mt-0">{children}</main>
+      <main>{children}</main>
       <Footer />
       <BackToTop />
     </div>

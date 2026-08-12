@@ -67,7 +67,7 @@ export const VerifyLive = ({ userId }: VerifyLiveProps) => {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center py-10 text-center text-sm text-gray-500">
+      <div className="flex flex-col items-center justify-center py-10 text-center text-gray-500 text-sm">
         <BrandLoader />
         <p>Preparing live verification...</p>
       </div>
@@ -76,7 +76,7 @@ export const VerifyLive = ({ userId }: VerifyLiveProps) => {
 
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center py-10 text-center text-sm text-red-500">
+      <div className="flex flex-col items-center justify-center py-10 text-center text-red-500 text-sm">
         <p>Error: {error}</p>
       </div>
     );
@@ -84,7 +84,7 @@ export const VerifyLive = ({ userId }: VerifyLiveProps) => {
 
   if (!config) {
     return (
-      <div className="flex flex-col items-center justify-center py-10 text-center text-sm text-gray-500">
+      <div className="flex flex-col items-center justify-center py-10 text-center text-gray-500 text-sm">
         <p>Unable to load verification. Please try again.</p>
       </div>
     );

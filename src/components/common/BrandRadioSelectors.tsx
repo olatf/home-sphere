@@ -29,20 +29,20 @@ export const BrandRadioSelectors = <T extends string>({
       name={name}
     >
       {options.map(opt => (
-        <label
+        <div
           key={opt.value}
-          className="font-secondary inline-flex cursor-pointer items-center gap-2 text-base"
+          className="inline-flex cursor-pointer items-center gap-2 font-secondary text-sm"
         >
           <RadioGroupPrimitive.Item
             value={opt.value}
             id={`${name}-${opt.value}`}
-            className="data-[state=checked]:border-brand relative flex h-5 w-5 items-center justify-center rounded-full border-2 border-slate-300 transition-colors"
+            className="relative flex h-5 w-5 items-center justify-center rounded-full border-2 border-slate-300 transition-colors data-[state=checked]:border-brand"
           >
-            <RadioGroupPrimitive.Indicator className="bg-brand h-3 w-3 rounded-full opacity-0 transition-opacity data-[state=checked]:opacity-100" />
+            <RadioGroupPrimitive.Indicator className="h-3 w-3 rounded-full bg-brand opacity-0 transition-opacity data-[state=checked]:opacity-100" />
           </RadioGroupPrimitive.Item>
 
           <span>{opt.label}</span>
-        </label>
+        </div>
       ))}
     </RadioGroupPrimitive.Root>
   );

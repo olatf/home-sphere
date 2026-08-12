@@ -1,23 +1,23 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { formatDistanceToNow } from 'date-fns';
 import {
   ArrowDownLeft,
   ArrowUpRight,
   Clock,
-  XCircle,
-  Receipt,
   Filter,
+  Receipt,
   RefreshCw,
+  XCircle,
 } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
-import { useUserWallet } from '@/hooks/useWallet';
-import { useInvalidateWallet } from '@/hooks/Useinvalidatewallet';
-import { formatCurrency } from '@/helpers/currency.helpers';
-import AnimatedWrapper from '@/components/common/AnimatedWrapper';
+import { useMemo, useState } from 'react';
+import { BrandButton } from '@/components/common/BrandButton';
+import { Pagination } from '@/components/common/Pagination';
 import { Badge } from '@/components/ui/badge';
 import { PAGE_SIZE } from '@/config/constants';
-import { Pagination } from '@/components/common/Pagination';
+import { formatCurrency } from '@/helpers/currency.helpers';
+import { useInvalidateWallet } from '@/hooks/Useinvalidatewallet';
+import { useUserWallet } from '@/hooks/useWallet';
 import { cn } from '@/lib/utils';
 
 type WalletTransaction = {
@@ -78,18 +78,18 @@ function TransactionItem({ tx }: { tx: WalletTransaction }) {
 
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1 md:gap-2">
-          <p className="truncate text-sm font-medium text-gray-800">
+          <p className="truncate font-medium text-gray-800 text-sm">
             {tx.description ||
               TYPE_LABELS[tx.transaction_type] ||
               tx.transaction_type}
           </p>
           <span
-            className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${statusCfg.className}`}
+            className={`shrink-0 rounded-full px-2 py-0.5 font-medium text-xs ${statusCfg.className}`}
           >
             {statusCfg.label}
           </span>
         </div>
-        <div className="mt-0.5 flex items-center gap-1 text-xs text-gray-400 md:gap-2">
+        <div className="mt-0.5 flex items-center gap-1 text-gray-400 text-xs md:gap-2">
           <span>{TYPE_LABELS[tx.transaction_type] ?? tx.transaction_type}</span>
           <span>·</span>
           <span>
@@ -100,7 +100,7 @@ function TransactionItem({ tx }: { tx: WalletTransaction }) {
 
       <p
         className={cn(
-          'shrink-0 text-sm font-semibold',
+          'shrink-0 font-semibold text-sm',
           isCredit ? 'text-emerald-600' : 'text-rose-500',
           isPending && 'text-amber-600'
         )}
@@ -112,10 +112,11 @@ function TransactionItem({ tx }: { tx: WalletTransaction }) {
 }
 
 function TransactionSkeleton() {
+  const skeletonItems = [1, 2, 3, 4, 5, 6];
   return (
     <div>
-      {Array.from({ length: PAGE_SIZE }).map((_, i) => (
-        <div key={i} className="flex items-center gap-3 px-4 py-3">
+      {skeletonItems.map(val => (
+        <div key={val} className="flex items-center gap-3 px-4 py-3">
           <div className="h-9 w-9 animate-pulse rounded-full bg-linear-to-br from-gray-100 via-slate-200 to-gray-100" />
           <div className="flex-1 space-y-1.5">
             <div className="h-3 w-2/3 animate-pulse rounded bg-linear-to-br from-gray-100 via-slate-200 to-gray-100" />
@@ -179,114 +180,112 @@ export const WalletActivities = () => {
   }
 
   return (
-    <AnimatedWrapper type="slideInUp">
-      <div className="mx-3 my-5 rounded-2xl border bg-white md:mx-7 md:my-10">
-        <div className="flex items-center justify-between border-b px-2 py-2 md:px-5 md:py-4">
-          <div className="flex items-center gap-2">
-            <Receipt className="size-4 text-gray-400" />
-            <h3 className="text-sm font-semibold text-gray-800">
-              Transactions
-            </h3>
-            {transactions.length > 0 && (
-              <Badge className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-500">
-                {transactions.length}
-              </Badge>
-            )}
-          </div>
-          <button
-            onClick={handleRefresh}
-            className="rounded-full p-1 text-gray-400 transition hover:text-gray-600"
-          >
+    <div className="mx-3 my-5 rounded-2xl border bg-white md:mx-7 md:my-10">
+      <div className="flex items-center justify-between border-b px-2 py-2 md:px-5 md:py-4">
+        <div className="flex items-center gap-2">
+          <Receipt className="size-4 text-gray-400" />
+          <h3 className="font-semibold text-gray-800 text-sm">Transactions</h3>
+          {transactions.length > 0 && (
+            <Badge className="rounded-full bg-gray-100 px-2 py-0.5 text-gray-500 text-xs">
+              {transactions.length}
+            </Badge>
+          )}
+        </div>
+        <BrandButton
+          size="sm"
+          onClick={handleRefresh}
+          disabled={refreshing}
+          leftIcon={
             <RefreshCw
               className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`}
             />
-          </button>
-        </div>
+          }
+        />
+      </div>
 
-        {/* Filter tabs */}
-        <div className="scrollbar-none flex items-center gap-1 overflow-x-auto border-b px-3 py-2 md:px-5">
-          <Filter className="mr-1 size-3.5 shrink-0 text-gray-300" />
-          {filterTabs.map(f => (
-            <button
-              key={f}
-              onClick={() => handleFilterChange(f)}
-              className={`shrink-0 rounded-lg px-2 py-1 text-xs font-medium capitalize transition md:px-3 ${
-                filter === f
-                  ? 'bg-emerald-100 text-emerald-700'
-                  : 'text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              {getTabLabel(f)}
-            </button>
-          ))}
-        </div>
+      {/* Filter tabs */}
+      <div className="scrollbar-none flex items-center gap-1 overflow-x-auto border-b px-3 py-2 md:px-5">
+        <Filter className="mr-1 size-3.5 shrink-0 text-gray-300" />
+        {filterTabs.map(f => (
+          <BrandButton
+            key={f}
+            onClick={() => handleFilterChange(f)}
+            className={`shrink-0 rounded-lg px-2 py-1 font-medium text-xs capitalize transition md:px-3 ${
+              filter === f
+                ? 'bg-emerald-100 text-emerald-700'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            {getTabLabel(f)}
+          </BrandButton>
+        ))}
+      </div>
 
-        {/* Transaction list */}
-        <div className="divide-y divide-gray-50 px-1">
-          {paginated.length === 0 ? (
-            <div className="flex flex-col items-center gap-2 py-8 text-center md:py-14">
-              {filter === 'All' ? (
-                <>
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-50">
-                    <Receipt className="h-5 w-5 text-gray-300" />
-                  </div>
-                  <p className="text-sm font-medium text-gray-500">
-                    No transactions yet
-                  </p>
-                  <p className="text-xs text-gray-400">
-                    Top up your wallet to get started.
-                  </p>
-                </>
-              ) : (
-                <>
-                  <XCircle className="h-8 w-8 text-gray-200" />
-                  <p className="text-sm text-gray-400">
-                    No {getTabLabel(filter).toLowerCase()} transactions
-                  </p>
-                </>
-              )}
-            </div>
-          ) : (
-            paginated.map(tx => <TransactionItem key={tx.id} tx={tx} />)
-          )}
-        </div>
-
-        {/* Pagination */}
-        {(totalPages > 1 || transactions.some(t => t.status === 'pending')) && (
-          <div className="space-y-3 border-t px-5 py-4">
-            {totalPages > 1 && (
-              <div className="flex flex-col gap-3">
-                <div className="flex items-center justify-between text-xs text-gray-400">
-                  <span>
-                    Showing {(page - 1) * PAGE_SIZE + 1}–
-                    {Math.min(page * PAGE_SIZE, filtered.length)} of{' '}
-                    {filtered.length}
-                  </span>
-                  <span>
-                    Page {page} of {totalPages}
-                  </span>
+      {/* Transaction list */}
+      <div className="divide-y divide-gray-50 px-1">
+        {paginated.length === 0 ? (
+          <div className="flex flex-col items-center gap-2 py-8 text-center md:py-14">
+            {filter === 'All' ? (
+              <>
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-50">
+                  <Receipt className="h-5 w-5 text-gray-300" />
                 </div>
-                <Pagination
-                  page={page}
-                  totalPages={totalPages}
-                  onPageChange={setPage}
-                  disabled={refreshing}
-                />
-              </div>
-            )}
-
-            {transactions.some(t => t.status === 'pending') && (
-              <div className="flex items-center gap-2 text-xs text-amber-600">
-                <Clock className="h-3.5 w-3.5" />
-                <span>
-                  Some transactions are still processing and may take up to 24
-                  hours.
-                </span>
-              </div>
+                <p className="font-medium text-gray-500 text-sm">
+                  No transactions yet
+                </p>
+                <p className="text-gray-400 text-xs">
+                  Top up your wallet to get started.
+                </p>
+              </>
+            ) : (
+              <>
+                <XCircle className="h-8 w-8 text-gray-200" />
+                <p className="text-gray-400 text-sm">
+                  No {getTabLabel(filter).toLowerCase()} transactions
+                </p>
+              </>
             )}
           </div>
+        ) : (
+          paginated.map(tx => <TransactionItem key={tx.id} tx={tx} />)
         )}
       </div>
-    </AnimatedWrapper>
+
+      {/* Pagination */}
+      {(totalPages > 1 || transactions.some(t => t.status === 'pending')) && (
+        <div className="space-y-3 border-t px-5 py-4">
+          {totalPages > 1 && (
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center justify-between text-gray-400 text-xs">
+                <span>
+                  Showing {(page - 1) * PAGE_SIZE + 1}–
+                  {Math.min(page * PAGE_SIZE, filtered.length)} of{' '}
+                  {filtered.length}
+                </span>
+                <span>
+                  Page {page} of {totalPages}
+                </span>
+              </div>
+              <Pagination
+                page={page}
+                totalPages={totalPages}
+                onPageChange={setPage}
+                disabled={refreshing}
+              />
+            </div>
+          )}
+
+          {transactions.some(t => t.status === 'pending') && (
+            <div className="flex items-center gap-2 text-amber-600 text-xs">
+              <Clock className="h-3.5 w-3.5" />
+              <span>
+                Some transactions are still processing and may take up to 24
+                hours.
+              </span>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
   );
 };

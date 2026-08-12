@@ -1,8 +1,8 @@
 'use client';
 
-import { BrandButton } from '@/components/common/BrandButton';
 import { Delete } from 'lucide-react';
-import { Dispatch, SetStateAction } from 'react';
+import type { Dispatch, SetStateAction } from 'react';
+import { BrandButton } from '@/components/common/BrandButton';
 
 export const BrandKeyPad = ({
   pin,
@@ -25,7 +25,7 @@ export const BrandKeyPad = ({
         <BrandButton
           key={num}
           onClick={() => handleKeyPress(num)}
-          className="h-14 rounded-xl bg-gray-100 text-lg font-semibold text-zinc-900 hover:bg-gray-200"
+          className="h-14 rounded-xl bg-gray-100 font-semibold text-lg text-zinc-900 hover:bg-gray-200"
         >
           {num}
         </BrandButton>
@@ -34,7 +34,7 @@ export const BrandKeyPad = ({
 
       <BrandButton
         onClick={() => handleKeyPress(0)}
-        className="h-14 rounded-xl bg-gray-100 text-lg font-semibold text-zinc-900 hover:bg-gray-200"
+        className="h-14 rounded-xl bg-gray-100 font-semibold text-lg text-zinc-900 hover:bg-gray-200"
       >
         0
       </BrandButton>

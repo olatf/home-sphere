@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
 import { Star } from 'lucide-react';
+import { useState } from 'react';
 import { cn } from '@/lib/utils';
 
 type StarRatingProps = {
@@ -66,7 +66,7 @@ export const BrandStarRating = ({
 
         return (
           <Star
-            key={index}
+            key={starValue}
             size={size}
             className={cn(
               'transition-colors duration-200',
@@ -81,7 +81,7 @@ export const BrandStarRating = ({
       })}
 
       {showValue && (
-        <span className="text-muted-foreground ml-2 text-sm font-medium">
+        <span className="ml-2 font-medium text-muted-foreground text-sm">
           {currentValue.toFixed(1)}
         </span>
       )}

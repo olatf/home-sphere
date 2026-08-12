@@ -1,16 +1,18 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
-import { safeStr } from '@/helpers/data.helpers';
 import type { Provider, User } from '@supabase/supabase-js';
+import { redirect } from 'next/navigation';
 import { SITE_URL } from '@/config/constants';
-import { OnboardingValues } from '@/lib/schemas/onboarding';
+import { safeStr } from '@/helpers/data.helpers';
+import { capitalizeWords } from '@/helpers/formatters.helpers';
+import type { OnboardingValues } from '@/lib/schemas/onboarding';
+import { onboardingSchema } from '@/lib/schemas/onboarding';
+import { createAdminClient } from '@/lib/supabase/admin';
+import { createClient } from '@/lib/supabase/server';
+import { getOnboardingEmailHTML } from '@/templates/emails/getOnboardingEmail';
 import { getResetPasswordEmailHTML } from '@/templates/emails/getResetPasswordEmail';
 import { sendEmail } from './sendEmail';
-import { redirect } from 'next/navigation';
 import { uploadFile } from './uploadFile';
-import { capitalizeWords } from '@/helpers/formatters.helpers';
-import { getOnboardingEmailHTML } from '@/templates/emails/getOnboardingEmail';
 
 export const signUp = async (email: string) => {
   const supabase = await createClient();
@@ -284,6 +286,14 @@ export const completeOnboarding = async ({
     throw new Error('User not authenticated');
   }
 
+  const parsed = onboardingSchema.safeParse(data);
+  if (!parsed.success) {
+    throw new Error(
+      parsed.error.issues[0]?.message ?? 'Invalid onboarding data'
+    );
+  }
+  data = parsed.data;
+
   if (!data.meansOfIdentification && !data.selfieImage) {
     throw new Error(
       'Either means of identification or selfie image file is required'
@@ -291,14 +301,8 @@ export const completeOnboarding = async ({
   }
 
   const uploads = await Promise.all([
-    uploadFile(data.selfieImage, 'verification-documents', '', user.id, false),
-    uploadFile(
-      data.meansOfIdentification,
-      'verification-documents',
-      '',
-      user.id,
-      false
-    ),
+    uploadFile(data.selfieImage, 'verification-documents', '', false),
+    uploadFile(data.meansOfIdentification, 'verification-documents', '', false),
   ]);
 
   const [selfieImg, verificationImg] = uploads;
@@ -350,14 +354,47 @@ export const completeOnboarding = async ({
     const html = getOnboardingEmailHTML(
       capitalizeWords(safeStr(user.user_metadata?.full_name))
     );
-    // send onboarding confirmation email
     await sendEmail({
       to: user.email,
-      subject: `Welcome to HomeSphere! Your onboarding is complete. Verification underway...`,
+      subject: 'Welcome to Homesphere — your verification is underway',
       html,
-      from: 'HomeSphere <onboarding@resend.dev>',
-    });
+    }).catch(() => {});
   }
 
   return { success: true };
+};
+
+export const getAvailableUsers = async () => {
+  const admin = await createAdminClient();
+
+  const [
+    { data: users, error: usersError },
+    { data: roles, error: rolesError },
+  ] = await Promise.all([
+    admin.from('user_profiles').select('id, full_name, email, avatar_url'),
+
+    admin.from('user_roles').select('user_id, role'),
+  ]);
+
+  if (usersError || rolesError) {
+    return {
+      success: false,
+      error: usersError?.message || rolesError?.message,
+      data: null,
+    };
+  }
+
+  const refinedData = users?.map(user => {
+    const userRole = roles?.find(role => role.user_id === user.id);
+
+    return {
+      ...user,
+      role: userRole?.role,
+    };
+  });
+
+  return {
+    success: true,
+    data: refinedData,
+  };
 };

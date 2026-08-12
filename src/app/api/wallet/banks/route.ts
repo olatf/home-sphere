@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { listBanks } from '@/lib/paystack';
 import { getErrorMessage } from '@/helpers/error.helpers';
+import { listBanks } from '@/lib/paystack';
 
 export const revalidate = 3600;
 

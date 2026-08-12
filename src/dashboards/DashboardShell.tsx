@@ -1,10 +1,10 @@
 'use client';
 
+import { usePathname } from 'next/navigation';
 import type { ReactNode } from 'react';
 import { useState } from 'react';
-import { DashboardNavbar, AdminNavbar, SummaryHeader } from '@/navigations';
+import { AdminNavbar, DashboardNavbar, SummaryHeader } from '@/navigations';
 import { DashboardVerificationWidget } from './DashboardVerificationWidget';
-import { usePathname } from 'next/navigation';
 
 export function DashboardShell({
   children,
@@ -24,7 +24,7 @@ export function DashboardShell({
   return (
     <div className="flex h-screen flex-col overflow-hidden md:flex-row">
       {/* Sidebar */}
-      <aside className="bg-background border-r py-3 md:w-64 md:shrink-0 md:py-0">
+      <aside className="border-r bg-background py-3 md:w-64 md:shrink-0 md:py-0">
         {isAdmin ? <AdminNavbar /> : <DashboardNavbar userRole={userRole} />}
       </aside>
 

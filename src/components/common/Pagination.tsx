@@ -1,4 +1,5 @@
 import { ArrowLeft, ArrowRight } from 'lucide-react';
+import { BrandButton } from '@/components/common/BrandButton';
 import { cn } from '@/lib/utils';
 
 type TablePaginationProps = {
@@ -55,23 +56,22 @@ export function Pagination({
   const pages = getPageNumbers(page, totalPages);
 
   return (
-    <div className="flex items-center justify-between border-t border-[#EAECF0] pt-4">
-      <button
-        type="button"
+    <div className="flex items-center justify-between border-[#EAECF0] border-t pt-4">
+      <BrandButton
         onClick={() => onPageChange(Math.max(1, page - 1))}
         disabled={page <= 1 || disabled}
-        className="flex cursor-pointer items-center gap-2 text-sm font-semibold text-[#1A1A1A] transition-colors hover:text-[#0C1B20] disabled:pointer-events-none disabled:opacity-40"
+        className="cursor-pointer font-semibold text-brand-black text-sm transition-colors hover:text-[#0C1B20] disabled:pointer-events-none disabled:opacity-40"
+        leftIcon={<ArrowLeft className="size-5" />}
       >
-        <ArrowLeft className="size-5" />
         Previous
-      </button>
+      </BrandButton>
 
       <div className="flex items-center gap-1">
-        {pages.map((p, i) =>
+        {pages.map(p =>
           p === '...' ? (
             <span
-              key={`ellipsis-${i}`}
-              className="flex size-10 items-center justify-center text-sm text-[#667085]"
+              key={p}
+              className="flex size-10 items-center justify-center text-[#667085] text-sm"
             >
               ...
             </span>
@@ -82,7 +82,7 @@ export function Pagination({
               onClick={() => onPageChange(p)}
               disabled={disabled}
               className={cn(
-                'flex size-10 cursor-pointer items-center justify-center rounded-lg text-sm font-bold transition-colors',
+                'flex size-10 cursor-pointer items-center justify-center rounded-lg font-bold text-sm transition-colors',
                 p === page
                   ? 'bg-[#F9FAFB] text-[#1D2939]'
                   : 'text-[#667085] hover:bg-[#F9FAFB] hover:text-[#1D2939]',
@@ -95,15 +95,14 @@ export function Pagination({
         )}
       </div>
 
-      <button
-        type="button"
+      <BrandButton
         onClick={() => onPageChange(Math.min(totalPages, page + 1))}
         disabled={page >= totalPages || disabled}
-        className="flex cursor-pointer items-center gap-2 text-sm font-semibold text-[#1A1A1A] transition-colors hover:text-[#0C1B20] disabled:pointer-events-none disabled:opacity-40"
+        className="cursor-pointer font-semibold text-brand-black text-sm transition-colors hover:text-[#0C1B20] disabled:pointer-events-none disabled:opacity-40"
+        rightIcon={<ArrowRight className="size-5" />}
       >
         Next
-        <ArrowRight className="size-5" />
-      </button>
+      </BrandButton>
     </div>
   );
 }

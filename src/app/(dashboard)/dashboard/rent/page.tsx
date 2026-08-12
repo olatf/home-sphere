@@ -1,3 +1,8 @@
+import { MyRents } from '@/tenants';
 export default function RentPage() {
-  return <div>This is the my rents page</div>;
+  return (
+    <section className="p-3 md:p-4">
+      <MyRents />
+    </section>
+  );
 }

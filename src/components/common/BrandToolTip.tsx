@@ -1,9 +1,9 @@
+import { CircleHelp, ShieldAlert } from 'lucide-react';
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { CircleHelp, ShieldAlert } from 'lucide-react';
 
 interface BrandToolTipProps {
   content: string;
@@ -34,7 +34,7 @@ interface BrandToastProps {
 export const BrandToast = ({ show, content }: BrandToastProps) => {
   if (!show) return null;
   return (
-    <div className="animate-in fade-in slide-in-from-top-2 mx-7 flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700 shadow-sm duration-200">
+    <div className="fade-in slide-in-from-top-2 mx-7 flex animate-in items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-amber-700 text-sm shadow-sm duration-200">
       <ShieldAlert className="h-4 w-4 shrink-0 text-amber-500" />
       <span>{content}</span>
     </div>

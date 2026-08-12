@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
-import { verifyAccountNumber } from '@/lib/paystack';
 import { getErrorMessage } from '@/helpers/error.helpers';
+import { verifyAccountNumber } from '@/lib/paystack';
+import { createClient } from '@/lib/supabase/server';
 
 export async function GET(req: Request) {
   try {

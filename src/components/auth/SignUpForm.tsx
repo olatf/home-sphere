@@ -1,22 +1,22 @@
 'use client';
 
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Loader2, Mail, Undo2 } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useTransition } from 'react';
 import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Loader2, Undo2 } from 'lucide-react';
-import { SignProvidersButtons } from './SignProviderButtons';
-import { registerSchema, type RegisterFormValues } from '@/lib/schemas/auth';
+import { toast } from 'sonner';
+import { signUp } from '@/actions/auth';
+import AnimatedWrapper from '@/components/common/AnimatedWrapper';
+import { BrandButton } from '@/components/common/BrandButton';
+import { BrandInput } from '@/components/common/BrandInput';
 import { Card } from '@/components/ui/card';
 import { Form } from '@/components/ui/form';
 import { getErrorMessage } from '@/helpers/error.helpers';
-import { toast } from 'sonner';
-import { signUp } from '@/actions/auth';
-import { useRouter } from 'next/navigation';
-import { BrandButton } from '@/components/common/BrandButton';
-import { BrandInput } from '@/components/common/BrandInput';
+import { type RegisterFormValues, registerSchema } from '@/lib/schemas/auth';
 import { useOnboardingStore } from '@/stores/useOnboardingStore';
-import AnimatedWrapper from '@/components/common/AnimatedWrapper';
+import { SignProvidersButtons } from './SignProviderButtons';
 
 export const SignUpForm = () => {
   const [isSendingOtp, startSendingOtp] = useTransition();
@@ -56,22 +56,22 @@ export const SignUpForm = () => {
 
   return (
     <AnimatedWrapper type="slideInRight">
-      <div className="relative flex w-full items-center justify-center px-1 md:mx-auto md:w-[90%] md:px-6">
-        <Card className="w-full border px-3 shadow md:max-w-md md:border-none md:px-0 md:shadow-none">
+      <div className="relative flex w-full items-center justify-center rounded-lg border px-1 shadow md:mx-auto md:w-[89%] md:max-w-md md:px-6 lg:w-[90%] lg:border-none lg:shadow-none">
+        <Card className="w-full border-none px-3 shadow-none md:px-0">
           <div className="mx-auto flex justify-center">
             <Link
               href="/"
-              className="font-primary hover:text-brand absolute top-5 left-3 flex cursor-pointer items-center rounded-full bg-white/90 px-4 py-2 text-center text-sm font-semibold italic shadow lg:hidden"
+              className="absolute top-5 left-3 flex cursor-pointer items-center rounded-full bg-white/90 px-4 py-2 text-center font-primary font-semibold text-sm italic shadow hover:text-brand lg:hidden"
             >
               <Undo2 className="mr-2 size-4" />
               HomeSphere
             </Link>
-            <h1 className="font-secondary mt-10 mb-1 text-center text-3xl font-bold">
+            <h1 className="mt-10 mb-1 text-center font-bold font-secondary text-3xl">
               More than just a Sphere{' '}
-              <span className="text-brand block">Find Your Spec</span>
+              <span className="block text-brand">Find Your Spec</span>
             </h1>
           </div>
-          <h2 className="text-md font-secondary my-5 text-center">
+          <h2 className="my-5 text-center font-secondary text-md">
             Sign Up to our community
           </h2>
 
@@ -83,35 +83,41 @@ export const SignUpForm = () => {
                 type="email"
                 placeholder="you@example.com"
                 formRef={form}
+                required
+                leftElement={<Mail className="size-4" />}
               />
 
-              <BrandButton type="submit" className="mx-auto my-3 w-[70%]">
-                {isSendingOtp ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Loading...
-                  </>
-                ) : (
-                  'Register'
-                )}
-              </BrandButton>
+              <div className="flex justify-center">
+                <BrandButton
+                  type="submit"
+                  className="mx-auto my-3 w-[70%]"
+                  disabled={isSendingOtp}
+                  leftIcon={
+                    isSendingOtp ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : null
+                  }
+                >
+                  {isSendingOtp ? <>Loading...</> : 'Register'}
+                </BrandButton>
+              </div>
 
               <div className="relative my-6">
                 <div className="absolute inset-0 flex items-center">
                   <span className="w-full border-t" />
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-background text-brand-dark px-2">Or</span>
+                  <span className="bg-background px-2 text-brand-dark">Or</span>
                 </div>
               </div>
 
               <SignProvidersButtons />
 
-              <p className="text-muted-foreground mt-6 text-center text-sm">
+              <p className="mt-6 text-center text-muted-foreground text-sm">
                 Have an Account?{' '}
                 <Link
                   href="/sign-in"
-                  className="text-brand-dark font-secondary font-semibold hover:underline"
+                  className="font-secondary font-semibold text-brand-dark hover:underline"
                 >
                   Login
                 </Link>

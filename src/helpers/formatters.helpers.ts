@@ -66,7 +66,7 @@ export function toKebabCase(text: string): string {
  */
 export function truncate(text: string, length: number): string {
   if (!text || length <= 0) return '';
-  return text.length > length ? text.slice(0, length) + '...' : text;
+  return text.length > length ? `${text.slice(0, length)}...` : text;
 }
 
 /**

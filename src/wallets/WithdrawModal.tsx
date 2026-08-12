@@ -1,18 +1,21 @@
 'use client';
 
-import { useReducer, useEffect, useCallback } from 'react';
-import { ArrowUp, Loader2, CheckCircle2, Search } from 'lucide-react';
+import { ArrowUp, CheckCircle2, Loader2, Search } from 'lucide-react';
+import { useCallback, useEffect, useReducer } from 'react';
+import { BrandButton } from '@/components/common/BrandButton';
+import { BrandInput, type FormValue } from '@/components/common/BrandInput';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { useUserWallet } from '@/hooks/useWallet';
-import { useInvalidateWallet } from '@/hooks/Useinvalidatewallet';
-import { usePinGuard } from '@/hooks/usePinGuard';
 import { formatCurrency } from '@/helpers/currency.helpers';
 import { getErrorMessage } from '@/helpers/error.helpers';
+import { useInvalidateWallet } from '@/hooks/Useinvalidatewallet';
+import { usePinGuard } from '@/hooks/usePinGuard';
+import { useRovingTabIndex } from '@/hooks/useRovingTabIndex';
+import { useUserWallet } from '@/hooks/useWallet';
 
 interface Bank {
   name: string;
@@ -130,8 +133,24 @@ export function WithdrawModal({ isOpen, onClose }: WithdrawModalProps) {
 
   const numericAmount = parseFloat(amount);
   const balance = wallet?.balance ?? 0;
+
+  const selectBank = useCallback(
+    (index: number) => {
+      const bank = filteredBanks[index];
+      if (bank) dispatch({ type: 'SET_BANK', payload: bank });
+    },
+    [filteredBanks]
+  );
+
+  const bankList = useRovingTabIndex({
+    itemCount: Math.min(filteredBanks.length, 20),
+    onSelect: selectBank,
+  });
+
   const isAmountValid =
-    !isNaN(numericAmount) && numericAmount >= 100 && numericAmount <= balance;
+    !Number.isNaN(numericAmount) &&
+    numericAmount >= 100 &&
+    numericAmount <= balance;
   const canSubmit =
     isAmountValid && bankCode && accountNumber.length === 10 && accountName;
 
@@ -227,7 +246,7 @@ export function WithdrawModal({ isOpen, onClose }: WithdrawModalProps) {
           <DialogHeader className="border-b px-6 py-4">
             <div className="flex items-center gap-2">
               <ArrowUp className="h-5 w-5 text-emerald-600" />
-              <DialogTitle className="text-lg font-semibold text-gray-900">
+              <DialogTitle className="font-semibold text-gray-900 text-lg">
                 Withdraw Funds
               </DialogTitle>
             </div>
@@ -237,10 +256,10 @@ export function WithdrawModal({ isOpen, onClose }: WithdrawModalProps) {
             {step === 'success' ? (
               <div className="flex flex-col items-center gap-3 py-8 text-center">
                 <CheckCircle2 className="h-14 w-14 text-emerald-500" />
-                <p className="text-lg font-semibold text-gray-800">
+                <p className="font-semibold text-gray-800 text-lg">
                   Withdrawal Initiated!
                 </p>
-                <p className="text-sm text-gray-500">
+                <p className="text-gray-500 text-sm">
                   {formatCurrency(numericAmount)} is being transferred to{' '}
                   {accountName}.
                   <br />
@@ -250,50 +269,51 @@ export function WithdrawModal({ isOpen, onClose }: WithdrawModalProps) {
             ) : (
               <>
                 <div className="rounded-xl bg-emerald-50 px-4 py-3">
-                  <p className="text-xs text-emerald-700">Available Balance</p>
-                  <p className="text-xl font-bold text-emerald-700">
+                  <p className="text-emerald-700 text-xs">Available Balance</p>
+                  <p className="font-bold text-emerald-700 text-xl">
                     {formatCurrency(balance)}
                   </p>
                 </div>
 
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-gray-700">
+                  <div className="mb-1.5 block font-medium text-gray-700 text-sm">
                     Amount (₦)
-                  </label>
+                  </div>
                   <div className="relative">
                     <span className="absolute top-1/2 left-3 -translate-y-1/2 text-gray-400">
                       ₦
                     </span>
-                    <input
+                    <BrandInput
+                      name="amount"
                       type="number"
                       min={100}
                       max={balance}
                       placeholder="Enter amount"
                       value={amount}
-                      onChange={e =>
+                      onChange={(value: FormValue) => {
+                        const rawValue = value?.toString() ?? '';
                         dispatch({
                           type: 'SET_AMOUNT',
-                          payload: e.target.value,
-                        })
-                      }
-                      className="focus:border-brand-light/50 focus:ring-brand-light/50 w-full rounded-xl border border-gray-200 py-3 pr-4 pl-7 focus:ring-2 focus:outline-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                          payload: rawValue,
+                        });
+                      }}
                     />
                   </div>
                   {numericAmount > balance && (
-                    <p className="mt-1 text-xs text-red-500">
+                    <p className="mt-1 text-red-500 text-xs">
                       Amount exceeds available balance
                     </p>
                   )}
                 </div>
 
                 <div className="relative">
-                  <label className="mb-1.5 block text-sm font-medium text-gray-700">
+                  <div className="mb-1.5 block font-medium text-gray-700 text-sm">
                     Bank
-                  </label>
+                  </div>
                   <div className="relative">
-                    <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
-                    <input
+                    <BrandInput
                       type="text"
+                      name="bank"
                       placeholder="Search bank..."
                       value={
                         bankCode
@@ -301,92 +321,116 @@ export function WithdrawModal({ isOpen, onClose }: WithdrawModalProps) {
                             bankSearch)
                           : bankSearch
                       }
-                      onChange={e =>
+                      onChange={(value: FormValue) => {
+                        const rawValue = value?.toString() ?? '';
                         dispatch({
                           type: 'SET_BANK_SEARCH',
-                          payload: e.target.value,
-                        })
-                      }
+                          payload: rawValue,
+                        });
+                      }}
                       onFocus={() =>
                         dispatch({
                           type: 'SET_SHOW_BANK_DROPDOWN',
                           payload: true,
                         })
                       }
-                      className="focus:border-brand-light/50 focus:ring-brand-light/50 w-full rounded-xl border border-gray-200 py-3 pr-4 pl-9 focus:ring-2 focus:outline-none"
+                      onKeyDown={e => {
+                        if (
+                          e.key === 'ArrowDown' &&
+                          showBankDropdown &&
+                          filteredBanks.length > 0
+                        ) {
+                          e.preventDefault();
+                          bankList.focusItem(0);
+                        }
+                      }}
+                      leftElement={<Search className="size-4" />}
                     />
                   </div>
                   {showBankDropdown &&
                     filteredBanks.length > 0 &&
                     !bankCode && (
-                      <ul className="absolute z-10 mt-1 max-h-48 w-full overflow-y-auto rounded-xl border border-gray-100 bg-white shadow-lg">
-                        {filteredBanks.slice(0, 20).map(b => (
-                          <li
-                            key={b.code}
-                            onClick={() =>
-                              dispatch({
-                                type: 'SET_BANK',
-                                payload: { code: b.code, name: b.name },
-                              })
-                            }
-                            className="cursor-pointer px-4 py-2.5 text-sm transition hover:bg-emerald-50"
-                          >
-                            {b.name}
-                          </li>
-                        ))}
+                      <ul
+                        // biome-ignore lint/a11y/noNoninteractiveElementToInteractiveRole: <ul>/<li> is the standard WAI-ARIA listbox/option pairing
+                        role="listbox"
+                        aria-label="Select bank"
+                        onKeyDown={bankList.handleKeyDown}
+                        className="absolute z-10 mt-1 max-h-48 w-full overflow-y-auto rounded-xl border border-gray-100 bg-white shadow-lg"
+                      >
+                        {filteredBanks.slice(0, 20).map((b, i) => {
+                          const itemProps = bankList.getItemProps(i);
+                          return (
+                            // biome-ignore lint/a11y/useKeyWithClickEvents: keyboard activation is handled by the roving-tabindex listbox (onKeyDown on the ul above)
+                            <li
+                              key={b.code}
+                              ref={itemProps.ref}
+                              tabIndex={itemProps.tabIndex}
+                              onFocus={itemProps.onFocus}
+                              // biome-ignore lint/a11y/noNoninteractiveElementToInteractiveRole: <ul>/<li> is the standard WAI-ARIA listbox/option pairing
+                              role="option"
+                              aria-selected={bankCode === b.code}
+                              onClick={() => selectBank(i)}
+                              className="cursor-pointer px-4 py-2.5 text-sm outline-none transition hover:bg-emerald-50 focus:bg-emerald-50"
+                            >
+                              {b.name}
+                            </li>
+                          );
+                        })}
                       </ul>
                     )}
                 </div>
 
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-gray-700">
-                    Account Number
-                  </label>
-                  <input
+                  <BrandInput
+                    name="accountNumber"
                     type="text"
+                    label="Account Number"
                     maxLength={10}
                     placeholder="10-digit account number"
                     value={accountNumber}
-                    onChange={e =>
+                    onChange={(value: FormValue) => {
+                      const rawValue = value?.toString() ?? '';
                       dispatch({
                         type: 'SET_ACCOUNT_NUMBER',
-                        payload: e.target.value.replace(/\D/g, ''),
-                      })
-                    }
-                    className="focus:border-brand-light/50 focus:ring-brand-light/50 w-full rounded-xl border border-gray-200 px-4 py-3 focus:ring-2 focus:outline-none"
+                        payload: rawValue.replace(/\D/g, ''),
+                      });
+                    }}
                   />
                   {step === 'verifying' && (
-                    <p className="mt-1 flex items-center gap-1 text-xs text-gray-400">
+                    <p className="mt-1 flex items-center gap-1 text-gray-400 text-xs">
                       <Loader2 className="h-3 w-3 animate-spin" /> Verifying
                       account...
                     </p>
                   )}
                   {accountName && (
-                    <p className="mt-1 flex items-center gap-1 text-xs font-medium text-emerald-600">
+                    <p className="mt-1 flex items-center gap-1 font-medium text-emerald-600 text-xs">
                       <CheckCircle2 className="h-3 w-3" /> {accountName}
                     </p>
                   )}
                 </div>
 
                 {error && (
-                  <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">
+                  <p className="rounded-lg bg-red-50 px-3 py-2 text-red-600 text-sm">
                     {error}
                   </p>
                 )}
 
-                <button
+                <BrandButton
                   onClick={handleWithdrawClick}
                   disabled={!canSubmit || step === 'submitting'}
-                  className="hover:bg-brand-dark/80 bg-brand flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-50"
+                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-brand py-3 font-semibold text-sm text-white transition hover:bg-brand-dark/80 disabled:cursor-not-allowed disabled:opacity-50"
+                  leftIcon={
+                    step === 'submitting' ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : null
+                  }
                 >
                   {step === 'submitting' ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin" /> Processing...
-                    </>
+                    <span> Processing...</span>
                   ) : (
                     `Withdraw ${isAmountValid ? formatCurrency(numericAmount) : ''}`
                   )}
-                </button>
+                </BrandButton>
               </>
             )}
           </div>

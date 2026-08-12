@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import { useVerificationStatus } from '@/hooks/useVerificationStatus';
-import { VerificationModal } from '@/verification/VerificationModal';
 import { VerificationBanner } from '@/verification/VerificationBanner';
+import { VerificationModal } from '@/verification/VerificationModal';
 
 export const DashboardVerificationWidget = ({
   onRefresh,

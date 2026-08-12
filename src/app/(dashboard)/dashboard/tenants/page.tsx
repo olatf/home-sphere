@@ -1,3 +1,9 @@
+import { LandlordTenancies } from '@/landLords';
+
 export default function TenantsPage() {
-  return <div>This is the tenants page</div>;
+  return (
+    <section className="p-3 md:p-4">
+      <LandlordTenancies />
+    </section>
+  );
 }

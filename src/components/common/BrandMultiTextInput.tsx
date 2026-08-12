@@ -1,17 +1,17 @@
 'use client';
 
-import { useState } from 'react';
 import { X } from 'lucide-react';
+import { useState } from 'react';
+import type { FieldValues, Path, UseFormReturn } from 'react-hook-form';
+import { Button } from '@/components/ui/button';
 import {
+  FormControl,
   FormField,
   FormItem,
   FormLabel,
-  FormControl,
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import type { UseFormReturn, FieldValues, Path } from 'react-hook-form';
 
 interface BrandMultiTextInputProps<T extends FieldValues> {
   name: Path<T>;
@@ -65,7 +65,7 @@ export function BrandMultiTextInput<T extends FieldValues>({
                     value={inputValue}
                     onChange={e => setInputValue(e.target.value)}
                     placeholder={placeholder}
-                    className="font-tertiary focus:border-brand focus-visible:border-brand rounded-none border-0 border-b-2 border-[#D0D5DD] bg-transparent px-0 text-base font-normal text-[#535A63] italic shadow-none focus:border-b focus:ring-0 focus:outline-none focus-visible:border-b focus-visible:ring-0 focus-visible:outline-none"
+                    className="rounded-none border-0 border-[#D0D5DD] border-b-2 bg-transparent px-0 font-normal font-tertiary text-[#535A63] text-base italic shadow-none focus:border-brand focus:border-b focus:outline-none focus:ring-0 focus-visible:border-brand focus-visible:border-b focus-visible:outline-none focus-visible:ring-0"
                     onKeyDown={e => {
                       if (e.key === 'Enter') {
                         e.preventDefault();
@@ -76,7 +76,7 @@ export function BrandMultiTextInput<T extends FieldValues>({
                   <Button
                     type="button"
                     onClick={addItem}
-                    className="hover:border-brand hover:border hover:bg-transparent hover:text-zinc-900"
+                    className="hover:border hover:border-brand hover:bg-transparent hover:text-zinc-900"
                   >
                     Add
                   </Button>

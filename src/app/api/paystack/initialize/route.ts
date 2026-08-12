@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
 import { generateReference, initializeTransaction } from '@/lib/paystack';
+import { createClient } from '@/lib/supabase/server';
 
 export async function POST(req: Request) {
   try {
@@ -15,7 +15,7 @@ export async function POST(req: Request) {
 
     const { amount } = await req.json();
 
-    if (!amount || isNaN(Number(amount)) || Number(amount) < 100) {
+    if (!amount || Number.isNaN(Number(amount)) || Number(amount) < 100) {
       return NextResponse.json(
         { error: 'Minimum top-up amount is ₦100' },
         { status: 400 }
