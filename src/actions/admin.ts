@@ -2,10 +2,18 @@
 
 import type { QueryData } from '@supabase/supabase-js';
 import { revalidatePath } from 'next/cache';
+import { getErrorMessage } from '@/helpers/error.helpers';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { requireAdmin } from '@/lib/supabase/guards';
 import { createClient } from '@/lib/supabase/server';
 
 export async function getAdminOverviewStats() {
+  try {
+    await requireAdmin();
+  } catch (err) {
+    return { success: false, error: getErrorMessage(err), data: null };
+  }
+
   const admin = await createAdminClient();
 
   const [
@@ -99,6 +107,17 @@ export async function getAdminUsers(opts?: {
   page?: number;
   limit?: number;
 }) {
+  try {
+    await requireAdmin();
+  } catch (err) {
+    return {
+      success: false,
+      error: getErrorMessage(err),
+      data: null,
+      total: 0,
+    };
+  }
+
   const admin = await createAdminClient();
   const page = opts?.page ?? 1;
   const limit = opts?.limit ?? 20;
@@ -146,6 +165,12 @@ export async function getAdminUsers(opts?: {
 }
 
 export async function getUserDetail(userId: string) {
+  try {
+    await requireAdmin();
+  } catch (err) {
+    return { success: false, error: getErrorMessage(err), data: null };
+  }
+
   const admin = await createAdminClient();
 
   const [
@@ -211,6 +236,12 @@ export async function suspendUser(
   reason: string,
   durationHours?: number
 ) {
+  try {
+    await requireAdmin();
+  } catch (err) {
+    return { success: false, error: getErrorMessage(err) };
+  }
+
   const supabase = await createClient();
   const admin = await createAdminClient();
 
@@ -241,6 +272,12 @@ export async function suspendUser(
 }
 
 export async function unsuspendUser(userId: string) {
+  try {
+    await requireAdmin();
+  } catch (err) {
+    return { success: false, error: getErrorMessage(err) };
+  }
+
   const admin = await createAdminClient();
   const { error } = await admin.auth.admin.updateUserById(userId, {
     ban_duration: 'none',
@@ -251,6 +288,12 @@ export async function unsuspendUser(userId: string) {
 }
 
 export async function updateUserRole(userId: string, newRole: string) {
+  try {
+    await requireAdmin();
+  } catch (err) {
+    return { success: false, error: getErrorMessage(err) };
+  }
+
   const supabase = await createClient();
   const admin = await createAdminClient();
 
@@ -296,6 +339,18 @@ export async function getAdminTenants(opts?: {
   status?: string;
   page?: number;
 }) {
+  try {
+    await requireAdmin();
+  } catch (err) {
+    return {
+      success: false,
+      error: getErrorMessage(err),
+      data: null,
+      total: 0,
+      totalPages: 0,
+    };
+  }
+
   const admin = await createAdminClient();
   const page = opts?.page ?? 1;
   const limit = 20;
@@ -366,6 +421,17 @@ export async function getAdminInspections(opts?: {
   status?: string;
   page?: number;
 }) {
+  try {
+    await requireAdmin();
+  } catch (err) {
+    return {
+      success: false,
+      error: getErrorMessage(err),
+      data: null,
+      total: 0,
+    };
+  }
+
   const admin = await createAdminClient();
   const page = opts?.page ?? 1;
   const limit = 20;
@@ -424,6 +490,12 @@ export async function assignFollowUpTask(data: {
   property_id?: string;
   tenancy_id?: string;
 }) {
+  try {
+    await requireAdmin();
+  } catch (err) {
+    return { success: false, error: getErrorMessage(err) };
+  }
+
   const supabase = await createClient();
   const admin = await createAdminClient();
 
@@ -450,6 +522,12 @@ export async function updateAdminProfile(data: {
   bio?: string;
   avatar_url?: string;
 }) {
+  try {
+    await requireAdmin();
+  } catch (err) {
+    return { success: false, error: getErrorMessage(err) };
+  }
+
   const supabase = await createClient();
   const {
     data: { user },
@@ -467,6 +545,12 @@ export async function updateAdminProfile(data: {
 }
 
 export async function changeAdminPassword(newPassword: string) {
+  try {
+    await requireAdmin();
+  } catch (err) {
+    return { success: false, error: getErrorMessage(err) };
+  }
+
   const supabase = await createClient();
   const { error } = await supabase.auth.updateUser({ password: newPassword });
   if (error) return { success: false, error: error.message };

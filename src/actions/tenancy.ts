@@ -666,6 +666,25 @@ export async function updateInspectionStatus(
   } = await supabase.auth.getUser();
   if (!user) return { success: false, error: 'Unauthorized' };
 
+  const { data: isAdmin } = await supabase.rpc('is_admin');
+
+  if (!isAdmin) {
+    // Non-admins may only cancel their own inspection — anything else
+    // (marking complete, rescheduling) is an admin-only action.
+    if (status !== 'cancelled') {
+      return { success: false, error: 'Unauthorized' };
+    }
+
+    const { data: owned } = await supabase
+      .from('inspections')
+      .select('id')
+      .eq('id', inspectionId)
+      .eq('tenant_id', user.id)
+      .maybeSingle();
+
+    if (!owned) return { success: false, error: 'Unauthorized' };
+  }
+
   const today = new Date();
 
   // Calculate expiry only if completed

@@ -75,7 +75,7 @@ const DesktopNav = ({
     ' text-zinc-900 hover:border-b hover:border-white hover:text-white text-base font-primary font-semibold transition-colors duration-300 ease-in-out';
 
   return (
-    <nav className="hidden w-full items-center gap-4 px-10 py-7 lg:flex xl:mx-auto xl:max-w-310 xl:px-0">
+    <nav className="hidden w-full items-center gap-4 px-10 py-7 lg:flex xl:px-6">
       <div className="flex w-full items-center justify-between">
         <BrandLogo isScrolled={isScrolled} />
 

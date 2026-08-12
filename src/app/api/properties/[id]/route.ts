@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { updateProperty } from '@/actions/property';
 import { getErrorMessage } from '@/helpers/error.helpers';
 import { createClient } from '@/lib/supabase/server';
 
@@ -9,27 +10,14 @@ interface Params {
 export async function PATCH(req: Request, { params }: Params) {
   try {
     const { id } = await params;
-    const supabase = await createClient();
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user)
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
     const body = await req.json();
-    const { data, error } = await supabase
-      .from('properties')
-      .update({ ...body, updated_at: new Date().toISOString() })
-      .eq('id', id)
-      .eq('landlord_id', user.id)
-      .select()
-      .single();
+    const result = await updateProperty(id, body);
 
-    if (error)
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    return NextResponse.json({ success: true, data });
+    if (!result.success) {
+      return NextResponse.json({ error: result.error }, { status: 400 });
+    }
+
+    return NextResponse.json(result);
   } catch (err) {
     const errorMessage = getErrorMessage(err);
     return NextResponse.json({ error: errorMessage }, { status: 500 });

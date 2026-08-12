@@ -167,13 +167,17 @@ export const OnboardingForm = () => {
               <footer className="fixed bottom-7 w-full max-w-xl border-t">
                 <div className="mt-4 flex justify-between">
                   <If cond={step > 0}>
-                    <BrandButton type="button" variant="ghost" onClick={back}>
+                    <BrandButton
+                      type="button"
+                      variant="ghost"
+                      onClick={back}
+                      className="border border-brand-primary"
+                    >
                       Back
                     </BrandButton>
                   </If>
                   <BrandButton
                     type={isLastStep ? 'submit' : 'button'}
-                    variant="ghost"
                     onClick={handleNext}
                   >
                     {buttonText}

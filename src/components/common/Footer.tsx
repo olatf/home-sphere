@@ -1,4 +1,5 @@
-import { Facebook, House, Instagram, Linkedin, Twitter } from 'lucide-react';
+import { Facebook, Instagram, Linkedin, Twitter } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
 
 const EXPLORE_LINKS = [
@@ -24,13 +25,17 @@ export default function Footer() {
   return (
     <footer className="bg-brand-black text-gray-300">
       <div className="container mx-auto px-6 py-16 lg:px-16">
-        <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-12 md:grid-cols-2">
           <div>
-            <Link href="/" className="flex items-center gap-2">
-              <House className="size-7 text-brand-primary" />
-              <span className="font-bold font-secondary text-white text-xl">
-                Homesphere
-              </span>
+            <Link href="/" className="mx-0 flex items-center md:mx-6">
+              <Image
+                src="/images/logo-black.webp"
+                alt="Brand Logo"
+                width={1500}
+                height={30}
+                className="h-auto w-full"
+                priority
+              />
             </Link>
             <p className="mt-4 max-w-xs font-secondary text-gray-400 text-sm leading-relaxed">
               Connecting landlords and tenants through trust, innovation, and a
@@ -52,79 +57,81 @@ export default function Footer() {
             </div>
           </div>
 
-          <div>
-            <h3 className="mb-4 font-primary font-semibold text-sm text-white">
-              Explore
-            </h3>
-            <ul className="space-y-3">
-              {EXPLORE_LINKS.map(link => (
-                <li key={link.href}>
+          <div className="flex w-full items-center justify-between gap-2 md:items-start">
+            <div>
+              <h3 className="mb-4 font-primary font-semibold text-sm text-white">
+                Explore
+              </h3>
+              <ul className="space-y-3">
+                {EXPLORE_LINKS.map(link => (
+                  <li key={link.href}>
+                    <Link
+                      href={link.href}
+                      className="font-secondary text-gray-400 text-sm transition hover:text-white"
+                    >
+                      {link.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div>
+              <h3 className="mb-4 font-primary font-semibold text-sm text-white">
+                Get started
+              </h3>
+              <ul className="space-y-3">
+                <li>
                   <Link
-                    href={link.href}
+                    href="/sign-up"
                     className="font-secondary text-gray-400 text-sm transition hover:text-white"
                   >
-                    {link.name}
+                    Create an account
                   </Link>
                 </li>
-              ))}
-            </ul>
-          </div>
+                <li>
+                  <Link
+                    href="/sign-in"
+                    className="font-secondary text-gray-400 text-sm transition hover:text-white"
+                  >
+                    Sign in
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/properties"
+                    className="font-secondary text-gray-400 text-sm transition hover:text-white"
+                  >
+                    Browse listings
+                  </Link>
+                </li>
+              </ul>
+            </div>
 
-          <div>
-            <h3 className="mb-4 font-primary font-semibold text-sm text-white">
-              Get started
-            </h3>
-            <ul className="space-y-3">
-              <li>
-                <Link
-                  href="/sign-up"
-                  className="font-secondary text-gray-400 text-sm transition hover:text-white"
-                >
-                  Create an account
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/sign-in"
-                  className="font-secondary text-gray-400 text-sm transition hover:text-white"
-                >
-                  Sign in
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/properties"
-                  className="font-secondary text-gray-400 text-sm transition hover:text-white"
-                >
-                  Browse listings
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          <div>
-            <h3 className="mb-4 font-primary font-semibold text-sm text-white">
-              Contact
-            </h3>
-            <ul className="space-y-3 font-secondary text-gray-400 text-sm">
-              <li>Ikeja, Lagos, Nigeria</li>
-              <li>
-                <a
-                  href="mailto:hello@homesphere.com"
-                  className="transition hover:text-white"
-                >
-                  hello@homesphere.com
-                </a>
-              </li>
-              <li>
-                <a
-                  href="tel:+2348000000000"
-                  className="transition hover:text-white"
-                >
-                  +234 800 000 0000
-                </a>
-              </li>
-            </ul>
+            <div>
+              <h3 className="mb-4 font-primary font-semibold text-sm text-white">
+                Contact
+              </h3>
+              <ul className="space-y-3 font-secondary text-gray-400 text-sm">
+                <li>Ikeja, Lagos, Nigeria</li>
+                <li>
+                  <a
+                    href="mailto:hello@homesphere.com"
+                    className="transition hover:text-white"
+                  >
+                    hello@homesphere.com
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="tel:+2348000000000"
+                    className="transition hover:text-white"
+                  >
+                    +234 800 000 0000
+                  </a>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
 

@@ -1,21 +1,21 @@
-import { House } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
-import { cn } from '@/lib/utils';
 
 export const BrandLogo = ({ isScrolled }: { isScrolled?: boolean }) => {
+  const imgSrc = isScrolled
+    ? '/images/logo-white.webp'
+    : '/images/logo-green.webp';
+
   return (
     <Link href="/" className="mx-0 flex items-center md:mx-6">
-      <House
-        className={isScrolled ? 'size-8 text-brand' : 'size-8 text-white'}
+      <Image
+        src={imgSrc}
+        alt="Brand Logo"
+        width={150}
+        height={40}
+        className="h-auto w-full"
+        priority
       />
-      <span
-        className={cn(
-          'ml-1 font-bold font-secondary text-foreground text-md lg:ml-2 lg:text-xl',
-          isScrolled ? 'text-brand' : 'text-white'
-        )}
-      >
-        HomeSphere
-      </span>
     </Link>
   );
 };

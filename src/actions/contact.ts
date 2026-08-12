@@ -2,7 +2,9 @@
 
 import { SUPPORT_EMAIL } from '@/config/constants';
 import { getErrorMessage } from '@/helpers/error.helpers';
+import { escapeHtml } from '@/helpers/html.helpers';
 import { type ContactFormData, contactSchema } from '@/lib/schemas/contact';
+import { renderEmailShell } from '@/templates/emails/email-shell';
 import { sendEmail } from './sendEmail';
 
 export async function submitContactForm(data: ContactFormData): Promise<{
@@ -24,12 +26,17 @@ export async function submitContactForm(data: ContactFormData): Promise<{
     await sendEmail({
       to: SUPPORT_EMAIL,
       subject: `New contact message: ${subject}`,
-      html: `
-        <p><strong>From:</strong> ${fullName} (${email})</p>
-        <p><strong>Subject:</strong> ${subject}</p>
-        <p><strong>Message:</strong></p>
-        <p>${message.replace(/\n/g, '<br />')}</p>
-      `,
+      html: renderEmailShell({
+        bodyHtml: `
+          <h2 style="font-family: 'Playfair Display', Georgia, serif; font-size: 22px; font-weight: 600; margin-bottom: 16px;">
+            New contact message
+          </h2>
+          <p><strong>From:</strong> ${escapeHtml(fullName)} (${escapeHtml(email)})</p>
+          <p><strong>Subject:</strong> ${escapeHtml(subject)}</p>
+          <p><strong>Message:</strong></p>
+          <p>${escapeHtml(message).replace(/\n/g, '<br />')}</p>
+        `,
+      }),
     });
 
     return { success: true, error: null };

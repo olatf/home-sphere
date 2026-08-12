@@ -102,7 +102,7 @@ export const PropertiesListingPage = ({
 
   return (
     <>
-      <div className="w-full space-y-6 md:mx-auto md:max-w-5xl xl:max-w-7xl">
+      <div className="mx-3 w-full space-y-6 md:mx-auto md:max-w-5xl xl:max-w-7xl">
         <div>
           <h1 className="font-bold font-primary text-2xl text-gray-900">
             Find a Property
@@ -120,8 +120,8 @@ export const PropertiesListingPage = ({
               className={cn(
                 'flex-1 shrink-0 rounded-lg py-2 font-medium text-sm capitalize transition',
                 tab === t
-                  ? 'bg-brand text-white shadow-sm'
-                  : 'border-none bg-transparent text-gray-500 shadow-none hover:bg-gray-100'
+                  ? 'bg-brand text-white'
+                  : 'border-none bg-transparent text-gray-500 hover:bg-gray-100'
               )}
             >
               {t === 'all' ? 'All' : `For ${capitalize(t.replace('_', ' '))}`}

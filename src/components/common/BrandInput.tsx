@@ -175,7 +175,7 @@ function InputRenderer<T extends FieldValues>({
 
     case 'file':
       return (
-        <div className="space-y-2">
+        <div className="w-full space-y-2">
           <BrandImageEditor
             control={formRef?.control}
             accept_types="JPG, WEBP"

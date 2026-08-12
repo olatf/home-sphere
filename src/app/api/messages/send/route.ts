@@ -1,8 +1,16 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { requireAdmin, UnauthorizedError } from '@/lib/supabase/guards';
 import { createClient } from '@/lib/supabase/server';
 
 export async function POST(req: Request) {
+  try {
+    await requireAdmin();
+  } catch (err) {
+    const status = err instanceof UnauthorizedError ? 403 : 401;
+    return NextResponse.json({ error: 'Unauthorized' }, { status });
+  }
+
   const supabase = await createClient();
   const admin = await createAdminClient();
   const {

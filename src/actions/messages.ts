@@ -1,8 +1,12 @@
 'use server';
 
 import { SITE_URL } from '@/config/constants';
+import { getErrorMessage } from '@/helpers/error.helpers';
+import { escapeHtml } from '@/helpers/html.helpers';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { requireAdmin } from '@/lib/supabase/guards';
 import { createClient } from '@/lib/supabase/server';
+import { renderEmailShell } from '@/templates/emails/email-shell';
 import type { Message } from '@/types/property';
 import { sendEmail } from './sendEmail';
 
@@ -21,6 +25,7 @@ interface SendParams {
     | 'system';
   sendEmailAlso?: boolean;
   toEmail?: string;
+  emailButton?: { label: string; href: string } | null;
 }
 
 export async function sendMessage(p: SendParams) {
@@ -45,18 +50,15 @@ export async function sendMessage(p: SendParams) {
     await sendEmail({
       to: p.toEmail,
       subject: p.subject,
-      html: `
-        <div style="font-family:'Hanken Grotesk',sans-serif;max-width:600px;margin:0 auto;padding:24px;">
-          <div style="background:#1b5e40;padding:20px 24px;border-radius:12px 12px 0 0;">
-            <h1 style="color:white;margin:0;font-size:20px;font-weight:700;">HomeSphere</h1>
-          </div>
-          <div style="border:1px solid #e5e7eb;border-top:none;padding:24px;border-radius:0 0 12px 12px;">
-            <h2 style="color:#1f2937;margin-top:0;">${p.subject}</h2>
-            <div style="color:#4b5563;line-height:1.7;">${p.body}</div>
-            <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0;"/>
-            <p style="color:#9ca3af;font-size:12px;margin:0;">HomeSphere · Lagos, Nigeria</p>
-          </div>
-        </div>`,
+      html: renderEmailShell({
+        bodyHtml: `
+          <h2 style="font-family: 'Playfair Display', Georgia, serif; font-size: 22px; font-weight: 600; margin-bottom: 16px;">
+            ${escapeHtml(p.subject)}
+          </h2>
+          ${p.body}
+        `,
+        button: p.emailButton ?? null,
+      }),
     }).catch(() => {});
   }
 
@@ -77,8 +79,11 @@ export async function notifyPropertyApproved(
     type: 'property',
     sendEmailAlso: true,
     subject: '🎉 Property Approved!',
-    body: `<p>Your property <strong>"${title}"</strong> has been approved and is now live on HomeSphere.</p>
-           <a href="${process.env.NEXT_PUBLIC_APP_URL}/landlord/properties/${propertyId}" style="display:inline-block;background:#1b5e40;color:white;padding:10px 20px;border-radius:8px;text-decoration:none;margin-top:12px;">View Property</a>`,
+    body: `<p>Your property <strong>"${escapeHtml(title)}"</strong> has been approved and is now live on Homesphere.</p>`,
+    emailButton: {
+      label: 'View Property',
+      href: `${SITE_URL}/landlord/properties/${propertyId}`,
+    },
   });
 }
 
@@ -94,7 +99,7 @@ export async function notifyPropertyRejected(
     type: 'property',
     sendEmailAlso: true,
     subject: 'Property Review Update',
-    body: `<p>Your property <strong>"${title}"</strong> could not be approved.</p><p><strong>Reason:</strong> ${reason}</p><p>Please update your listing and resubmit.</p>`,
+    body: `<p>Your property <strong>"${escapeHtml(title)}"</strong> could not be approved.</p><p><strong>Reason:</strong> ${escapeHtml(reason)}</p><p>Please update your listing and resubmit.</p>`,
   });
 }
 
@@ -114,12 +119,14 @@ export async function notifyInspectionDay(
     dateStyle: 'long',
   });
 
+  const safeTitle = escapeHtml(propertyTitle);
+
   const title =
     status === 'scheduled'
-      ? `<p>Your inspection for <strong>"${propertyTitle}"</strong> has been scheduled.</p>`
+      ? `<p>Your inspection for <strong>"${safeTitle}"</strong> has been scheduled.</p>`
       : status === 'completed'
-        ? `<p>Your inspection for <strong>"${propertyTitle}"</strong> has been completed.</p>`
-        : `<p>Your inspection for <strong>"${propertyTitle}"</strong> has been cancelled.</p>`;
+        ? `<p>Your inspection for <strong>"${safeTitle}"</strong> has been completed.</p>`
+        : `<p>Your inspection for <strong>"${safeTitle}"</strong> has been cancelled.</p>`;
 
   const infobody =
     status === 'scheduled'
@@ -128,18 +135,16 @@ export async function notifyInspectionDay(
         ? `<p>You have until <strong>${expiry}</strong> to commit to the property.</p>`
         : `<p>If you have any questions, please contact support.</p>`;
 
-  await Promise.all([
-    sendMessage({
-      userId: tenantId,
-      toEmail: tenantEmail,
-      type: 'notification',
-      sendEmailAlso: true,
-      subject: '🔍 Inspection Notification',
-      body: `<p>${title}</p>
-             <p>${infobody}</p>
-             <p style="color:#d97706;">⚠️ The inspection fee is non-refundable if you do not commit in time.</p>`,
-    }),
-  ]);
+  await sendMessage({
+    userId: tenantId,
+    toEmail: tenantEmail,
+    type: 'notification',
+    sendEmailAlso: true,
+    subject: '🔍 Inspection Notification',
+    body: `${title}
+           ${infobody}
+           <p style="color:#b45309;">⚠️ The inspection fee is non-refundable if you do not commit in time.</p>`,
+  });
 }
 
 export async function notifyInspectionBooked(
@@ -153,9 +158,9 @@ export async function notifyInspectionBooked(
     type: 'notification',
     sendEmailAlso: true,
     subject: '🔍 Inspection Booked',
-    body: `<p>Your inspection for <strong>"${propertyTitle}"</strong> is confirmed.</p>
-             <p>A day will be scheduled for your inspection, Please keep an eye on your inbox</p>
-             <p style="color:#d97706;">⚠️ The inspection fee is non-refundable if you do not commit in time.</p>`,
+    body: `<p>Your inspection for <strong>"${escapeHtml(propertyTitle)}"</strong> is confirmed.</p>
+             <p>A day will be scheduled for your inspection, please keep an eye on your inbox.</p>
+             <p style="color:#b45309;">⚠️ The inspection fee is non-refundable if you do not commit in time.</p>`,
   }).catch(() => {});
 }
 
@@ -171,6 +176,9 @@ export async function notifyPaymentReceived(
 ) {
   const fmt = (n: number) =>
     `₦${n.toLocaleString('en-NG', { minimumFractionDigits: 2 })}`;
+  const safeTitle = escapeHtml(propertyTitle);
+  const safeReference = escapeHtml(reference);
+
   await Promise.all([
     sendMessage({
       userId: tenantId,
@@ -178,9 +186,9 @@ export async function notifyPaymentReceived(
       type: 'payment',
       sendEmailAlso: true,
       subject: '💰 Payment Successful',
-      body: `<p>Your payment for <strong>"${propertyTitle}"</strong> was successful.</p>
+      body: `<p>Your payment for <strong>"${safeTitle}"</strong> was successful.</p>
              <p><strong>Amount Paid:</strong> ${fmt(tenantTotal)}</p>
-             <p><strong>Reference:</strong> ${reference}</p>
+             <p><strong>Reference:</strong> ${safeReference}</p>
              <p>Welcome to your new home! 🏠</p>`,
     }),
     sendMessage({
@@ -189,10 +197,10 @@ export async function notifyPaymentReceived(
       type: 'payment',
       sendEmailAlso: true,
       subject: '💰 Payout Received',
-      body: `<p>A tenant has completed payment for <strong>"${propertyTitle}"</strong>.</p>
+      body: `<p>A tenant has completed payment for <strong>"${safeTitle}"</strong>.</p>
              <p><strong>Your Payout:</strong> ${fmt(landlordPayout)}</p>
-             <p><strong>Reference:</strong> ${reference}</p>
-             <p>The funds have been credited to your HomeSphere wallet.</p>`,
+             <p><strong>Reference:</strong> ${safeReference}</p>
+             <p>The funds have been credited to your Homesphere wallet.</p>`,
     }),
   ]);
 }
@@ -205,6 +213,9 @@ export async function notifyTaskAssigned(
   priority: string,
   dueDate?: Date | null
 ) {
+  const safeTitle = escapeHtml(taskTitle);
+  const safePriority = escapeHtml(priority);
+
   return sendMessage({
     userId: assigneeId,
     toEmail: email,
@@ -212,10 +223,10 @@ export async function notifyTaskAssigned(
     sendEmailAlso: true,
     subject: `📋 New Task: ${taskTitle}`,
     body: `<p>You have been assigned a new task.</p>
-           <p><strong>Task:</strong> ${taskTitle}</p>
-           <p><strong>Priority:</strong> ${priority}</p>
-           ${dueDate ? `<p><strong>Due:</strong> ${new Date(dueDate).toLocaleDateString('en-NG', { dateStyle: 'long' })}</p>` : ''}
-           <a href="${SITE_URL}/dashboard/tasks" style="display:inline-block;background:#1b5e40;color:white;padding:10px 20px;border-radius:8px;text-decoration:none;margin-top:12px;">View Task</a>`,
+           <p><strong>Task:</strong> ${safeTitle}</p>
+           <p><strong>Priority:</strong> ${safePriority}</p>
+           ${dueDate ? `<p><strong>Due:</strong> ${new Date(dueDate).toLocaleDateString('en-NG', { dateStyle: 'long' })}</p>` : ''}`,
+    emailButton: { label: 'View Task', href: `${SITE_URL}/dashboard/tasks` },
   });
 }
 
@@ -233,9 +244,9 @@ export async function notifyTaskForwarded(
     sendEmailAlso: true,
     subject: `➡️ Task Forwarded: ${taskTitle}`,
     body: `<p>A task has been forwarded to you.</p>
-           <p><strong>Task:</strong> ${taskTitle}</p>
-           <p><strong>Reason:</strong> ${reason}</p>
-           <a href="${process.env.NEXT_PUBLIC_APP_URL}/tasks/${taskId}" style="display:inline-block;background:#1b5e40;color:white;padding:10px 20px;border-radius:8px;text-decoration:none;margin-top:12px;">View Task</a>`,
+           <p><strong>Task:</strong> ${escapeHtml(taskTitle)}</p>
+           <p><strong>Reason:</strong> ${escapeHtml(reason)}</p>`,
+    emailButton: { label: 'View Task', href: `${SITE_URL}/tasks/${taskId}` },
   });
 }
 
@@ -250,8 +261,8 @@ export async function notifyAccountSuspended(
     type: 'system',
     sendEmailAlso: true,
     subject: '🚫 Account Suspended',
-    body: `<p>Your HomeSphere account has been suspended.</p>
-           <p><strong>Reason:</strong> ${reason}</p>
+    body: `<p>Your Homesphere account has been suspended.</p>
+           <p><strong>Reason:</strong> ${escapeHtml(reason)}</p>
            <p>If you believe this is an error, please contact support.</p>`,
   });
 }
@@ -261,6 +272,12 @@ export async function adminSendMessage(
   subject: string,
   body: string
 ) {
+  try {
+    await requireAdmin();
+  } catch (err) {
+    return { success: false, error: getErrorMessage(err) };
+  }
+
   const supabase = await createClient();
   const admin = await createAdminClient();
 
@@ -272,7 +289,7 @@ export async function adminSendMessage(
   const { data: sender } = await admin
     .from('user_profiles')
     .select('full_name, email')
-    .eq('user_id', user.id)
+    .eq('id', user.id)
     .single();
 
   return sendMessage({

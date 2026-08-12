@@ -3,6 +3,8 @@
 import { z } from 'zod';
 import { SUPPORT_EMAIL } from '@/config/constants';
 import { getErrorMessage } from '@/helpers/error.helpers';
+import { escapeHtml } from '@/helpers/html.helpers';
+import { renderEmailShell } from '@/templates/emails/email-shell';
 import { sendEmail } from './sendEmail';
 
 const newsletterSchema = z.object({
@@ -26,7 +28,9 @@ export async function subscribeToNewsletter(email: string): Promise<{
     await sendEmail({
       to: SUPPORT_EMAIL,
       subject: 'New newsletter subscriber',
-      html: `<p>${result.data.email} just subscribed to the Homesphere newsletter.</p>`,
+      html: renderEmailShell({
+        bodyHtml: `<p>${escapeHtml(result.data.email)} just subscribed to the Homesphere newsletter.</p>`,
+      }),
     });
 
     return { success: true, error: null };

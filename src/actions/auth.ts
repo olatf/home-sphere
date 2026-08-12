@@ -6,8 +6,10 @@ import { SITE_URL } from '@/config/constants';
 import { safeStr } from '@/helpers/data.helpers';
 import { capitalizeWords } from '@/helpers/formatters.helpers';
 import type { OnboardingValues } from '@/lib/schemas/onboarding';
+import { onboardingSchema } from '@/lib/schemas/onboarding';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
+import { getOnboardingEmailHTML } from '@/templates/emails/getOnboardingEmail';
 import { getResetPasswordEmailHTML } from '@/templates/emails/getResetPasswordEmail';
 import { sendEmail } from './sendEmail';
 import { uploadFile } from './uploadFile';
@@ -284,6 +286,14 @@ export const completeOnboarding = async ({
     throw new Error('User not authenticated');
   }
 
+  const parsed = onboardingSchema.safeParse(data);
+  if (!parsed.success) {
+    throw new Error(
+      parsed.error.issues[0]?.message ?? 'Invalid onboarding data'
+    );
+  }
+  data = parsed.data;
+
   if (!data.meansOfIdentification && !data.selfieImage) {
     throw new Error(
       'Either means of identification or selfie image file is required'
@@ -340,18 +350,16 @@ export const completeOnboarding = async ({
     throw new Error(roleUpdateError.message);
   }
 
-  // if (user.id && user.email) {
-  //   const html = getOnboardingEmailHTML(
-  //     capitalizeWords(safeStr(user.user_metadata?.full_name))
-  //   );
-  //   // send onboarding confirmation email
-  //   await sendEmail({
-  //     to: user.email,
-  //     subject: `Welcome to HomeSphere! Your onboarding is complete. Verification underway...`,
-  //     html,
-  //     from: 'HomeSphere <onboarding@resend.dev>',
-  //   });
-  // }
+  if (user.id && user.email) {
+    const html = getOnboardingEmailHTML(
+      capitalizeWords(safeStr(user.user_metadata?.full_name))
+    );
+    await sendEmail({
+      to: user.email,
+      subject: 'Welcome to Homesphere — your verification is underway',
+      html,
+    }).catch(() => {});
+  }
 
   return { success: true };
 };

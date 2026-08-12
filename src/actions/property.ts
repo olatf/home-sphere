@@ -2,11 +2,13 @@
 
 import { revalidatePath } from 'next/cache';
 import { getErrorMessage } from '@/helpers/error.helpers';
+import { sanitizeRichText } from '@/helpers/sanitize.helpers';
 import {
   type CreatePropertyFormData,
   createPropertySchema,
 } from '@/lib/schemas/property';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { requireAdmin } from '@/lib/supabase/guards';
 import { createClient } from '@/lib/supabase/server';
 import type { Property, PropertyStatus } from '@/types/property';
 import { notifyPropertyApproved, notifyPropertyRejected } from './messages';
@@ -41,6 +43,7 @@ export async function createProperty(
     .insert({
       landlord_id: user.id,
       ...parsed.data,
+      description: sanitizeRichText(parsed.data.description),
       status: publish ? 'pending_review' : 'draft',
       max_duration_years: maxDuration,
       published_at: publish ? new Date().toISOString() : null,
@@ -64,9 +67,22 @@ export async function updateProperty(
   } = await supabase.auth.getUser();
   if (!user) return { success: false, error: 'Unauthorized' };
 
+  const parsed = createPropertySchema.partial().safeParse(data);
+  if (!parsed.success) {
+    return { success: false, error: getErrorMessage(parsed.error.message) };
+  }
+
+  const update = {
+    ...parsed.data,
+    ...(parsed.data.description !== undefined && {
+      description: sanitizeRichText(parsed.data.description),
+    }),
+    updated_at: new Date().toISOString(),
+  };
+
   const { error } = await supabase
     .from('properties')
-    .update({ ...data, updated_at: new Date().toISOString() })
+    .update(update)
     .eq('id', propertyId)
     .eq('landlord_id', user.id);
 
@@ -212,6 +228,12 @@ export async function reviewProperty(
   providing_legal_ads?: boolean,
   rejectionReason?: string
 ) {
+  try {
+    await requireAdmin();
+  } catch (err) {
+    return { success: false, error: getErrorMessage(err) };
+  }
+
   const supabase = await createClient();
 
   const admin = await createAdminClient();
@@ -307,6 +329,12 @@ export async function adminGetAllProperties(filters?: {
   status?: PropertyStatus;
   page?: number;
 }) {
+  try {
+    await requireAdmin();
+  } catch (err) {
+    return { success: false, error: getErrorMessage(err), data: null };
+  }
+
   const admin = await createAdminClient();
 
   const page = filters?.page ?? 1;

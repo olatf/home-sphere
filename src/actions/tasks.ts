@@ -10,10 +10,17 @@ import type {
 } from '@/lib/schemas/property';
 import { createTaskSchema, forwardTaskSchema } from '@/lib/schemas/property';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { requireAdmin } from '@/lib/supabase/guards';
 import { createClient } from '@/lib/supabase/server';
 import { notifyTaskAssigned, notifyTaskForwarded } from './messages';
 
 export async function createTask(data: CreateTaskFormData) {
+  try {
+    await requireAdmin();
+  } catch (err) {
+    return { success: false, error: getErrorMessage(err) };
+  }
+
   const supabase = await createClient();
   const admin = await createAdminClient();
 
