@@ -1,7 +1,4 @@
--- Simple fixed-window rate limiter, callable via RPC from both anon and
--- authenticated contexts. Direct table access is denied (RLS enabled, no
--- policies) — the SECURITY DEFINER function is the only way in, so callers
--- can't tamper with their own counters.
+
 
 create table public.rate_limits (
   key text primary key,

@@ -9,11 +9,6 @@ export async function getClientIp(): Promise<string> {
   return headerList.get('x-real-ip') ?? 'unknown';
 }
 
-/**
- * Returns true if the request is within the allowed rate, false if it
- * should be rejected. Uses the check_rate_limit Postgres function so the
- * counter is atomic across concurrent requests.
- */
 export async function checkRateLimit(
   key: string,
   maxRequests: number,
@@ -27,7 +22,6 @@ export async function checkRateLimit(
     p_window_seconds: windowSeconds,
   });
 
-  // Fail open: if the rate limiter itself errors, don't block real users.
   if (error) return true;
 
   return Boolean(data);
