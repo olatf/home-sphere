@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { SUPPORT_EMAIL } from '@/config/constants';
 import { getErrorMessage } from '@/helpers/error.helpers';
 import { escapeHtml } from '@/helpers/html.helpers';
+import { rateLimitByIp } from '@/lib/rate-limit';
 import { renderEmailShell } from '@/templates/emails/email-shell';
 import { sendEmail } from './sendEmail';
 
@@ -16,6 +17,14 @@ export async function subscribeToNewsletter(email: string): Promise<{
   error: string | null;
 }> {
   try {
+    const withinLimit = await rateLimitByIp('newsletter-signup', 5, 60 * 10);
+    if (!withinLimit) {
+      return {
+        success: false,
+        error: 'Too many attempts. Please try again later.',
+      };
+    }
+
     const result = newsletterSchema.safeParse({ email });
 
     if (!result.success) {

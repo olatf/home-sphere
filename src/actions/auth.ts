@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation';
 import { SITE_URL } from '@/config/constants';
 import { safeStr } from '@/helpers/data.helpers';
 import { capitalizeWords } from '@/helpers/formatters.helpers';
+import { checkRateLimit } from '@/lib/rate-limit';
 import type { OnboardingValues } from '@/lib/schemas/onboarding';
 import { onboardingSchema } from '@/lib/schemas/onboarding';
 import { createAdminClient } from '@/lib/supabase/admin';
@@ -15,6 +16,14 @@ import { sendEmail } from './sendEmail';
 import { uploadFile } from './uploadFile';
 
 export const signUp = async (email: string) => {
+  const withinLimit = await checkRateLimit(`signup-otp:${email}`, 5, 60 * 10);
+  if (!withinLimit) {
+    return {
+      success: false,
+      error: 'Too many attempts. Please try again in a few minutes.',
+    };
+  }
+
   const supabase = await createClient();
 
   const { error } = await supabase.auth.signInWithOtp({
@@ -84,6 +93,11 @@ export const login = async ({
 }) => {
   if (!email || !password) return { error: 'Invalid form input' };
 
+  const withinLimit = await checkRateLimit(`login:${email}`, 10, 60 * 15);
+  if (!withinLimit) {
+    return { error: 'Too many login attempts. Please try again later.' };
+  }
+
   const supabase = await createClient();
 
   const { error: authError } = await supabase.auth.signInWithPassword({
@@ -128,6 +142,11 @@ export const logout = async () => {
 };
 
 export const verifyOtp = async (email: string, token: string) => {
+  const withinLimit = await checkRateLimit(`verify-otp:${email}`, 10, 60 * 10);
+  if (!withinLimit) {
+    return { success: false, session: null };
+  }
+
   const supabase = await createClient();
 
   const { data, error } = await supabase.auth.verifyOtp({
@@ -143,6 +162,14 @@ export const verifyOtp = async (email: string, token: string) => {
 };
 
 export const resendOtp = async (email: string) => {
+  const withinLimit = await checkRateLimit(`resend-otp:${email}`, 5, 60 * 10);
+  if (!withinLimit) {
+    return {
+      success: false,
+      error: 'Too many attempts. Please try again in a few minutes.',
+    };
+  }
+
   const supabase = await createClient();
 
   const { error } = await supabase.auth.signInWithOtp({
@@ -260,6 +287,18 @@ export const resetPassword = async (password: string, email: string) => {
 };
 
 export const resetPasswordForEmail = async (email: string) => {
+  const withinLimit = await checkRateLimit(
+    `reset-password:${email}`,
+    5,
+    60 * 10
+  );
+  if (!withinLimit) {
+    return {
+      success: false,
+      error: 'Too many attempts. Please try again in a few minutes.',
+    };
+  }
+
   const supabase = await createClient();
 
   const { error } = await supabase.auth.resetPasswordForEmail(email);

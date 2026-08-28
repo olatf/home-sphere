@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { verifyTransaction } from '@/lib/paystack';
+import { rateLimitByUser } from '@/lib/rate-limit';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
 
@@ -13,6 +14,19 @@ export async function POST(req: Request) {
 
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const withinLimit = await rateLimitByUser(
+      'paystack-verify',
+      user.id,
+      20,
+      60 * 5
+    );
+    if (!withinLimit) {
+      return NextResponse.json(
+        { error: 'Too many requests. Please try again shortly.' },
+        { status: 429 }
+      );
     }
 
     const { reference } = await req.json();
@@ -43,7 +57,7 @@ export async function POST(req: Request) {
     const { data: tx } = await verifyTransaction(reference);
 
     if (tx.status !== 'success') {
-      await supabase
+      await admin
         .from('wallet_transactions')
         .update({ status: 'failed' })
         .eq('reference', reference)
@@ -77,7 +91,7 @@ export async function POST(req: Request) {
     if (creditErr) throw creditErr;
 
     // Mark transaction as completed
-    await supabase
+    await admin
       .from('wallet_transactions')
       .update({
         status: 'completed',

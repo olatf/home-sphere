@@ -6,6 +6,7 @@ import {
   initiateTransfer,
   verifyAccountNumber,
 } from '@/lib/paystack';
+import { rateLimitByUser } from '@/lib/rate-limit';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
 
@@ -19,6 +20,19 @@ export async function POST(req: Request) {
 
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const withinLimit = await rateLimitByUser(
+      'wallet-withdraw',
+      user.id,
+      5,
+      60 * 10
+    );
+    if (!withinLimit) {
+      return NextResponse.json(
+        { error: 'Too many withdrawal attempts. Please try again later.' },
+        { status: 429 }
+      );
     }
 
     const { amount, bank_code, account_number } = await req.json();
